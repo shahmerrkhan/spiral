@@ -1072,7 +1072,7 @@ function findTourTarget(step: TourStep): HTMLElement | null {
             return element.matches(selector) || element.closest(selector);
         })
         .map((element) => {
-            const target = step.key === "log-button" ? element : (element.closest<HTMLElement>("article, section") ?? element);
+            const target = element.closest<HTMLElement>("article, section") ?? element;
             const rect = target.getBoundingClientRect();
             const area = rect.width * rect.height;
             const isVisible = rect.width > 36 && rect.height > 36 && rect.bottom > 0 && rect.right > 0 && rect.top < window.innerHeight && rect.left < window.innerWidth;
