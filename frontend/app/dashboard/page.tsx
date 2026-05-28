@@ -1353,9 +1353,9 @@ type SpiralShareSnapshot = {
     }
 
     function computeShareStats(checkIns: CheckIn[]) {
-        const sorted = [...checkIns].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        const sorted = [...checkIns].sort((a, b) => new Date(a.created_at || new Date().toISOString()).getTime() - new Date(b.created_at || new Date().toISOString()).getTime());
         const uniqueWeeks = new Set(sorted.map((item) => {
-            const date = new Date(item.created_at);
+            const date = new Date(item.created_at || new Date().toISOString());
             const start = new Date(date.getFullYear(), 0, 1);
             return `${date.getFullYear()}-${Math.ceil(((date.getTime() - start.getTime()) / 86400000 + start.getDay() + 1) / 7)}`;
         }));
