@@ -580,17 +580,17 @@ const MANIFESTO_STORAGE_PREFIX = "spiral-manifesto:";
 
 function getManifestoGoalText(goal: Goal | null): string {
     const record = (goal || {}) as { goal_text?: string; goalText?: string; title?: string; text?: string };
-    return record.goal_text || record.goalText || record.title || record.text || "one ridiculous goal";
+    return record.goal_text || record.goal_text || record.title || record.text || "one ridiculous goal";
 }
 
 function getManifestoEffort(checkIn: CheckIn): number {
     const record = checkIn as unknown as { effort_score?: number; effortScore?: number; effort?: number };
-    return Math.max(1, Math.min(10, Number(record.effort_score || record.effortScore || record.effort || 1)));
+    return Math.max(1, Math.min(10, Number(record.effort_score || record.effort_score || record.effort || 1)));
 }
 
 function getManifestoLog(checkIn: CheckIn): string {
     const record = checkIn as unknown as { log_text?: string; logText?: string; notes?: string; log?: string };
-    return record.log_text || record.logText || record.notes || record.log || "";
+    return record.log_text || record.log_text || record.notes || record.log || "";
 }
 
 function generateSpiralManifesto(goal: Goal | null, checkIns: CheckIn[]): string {
@@ -671,7 +671,7 @@ function SpiralManifesto({ goal, checkIns }: { goal: Goal | null; checkIns: Chec
 
 function getSpiralDnaEffort(checkIn: CheckIn): number {
     const record = checkIn as unknown as { effort_score?: number; effortScore?: number; effort?: number };
-    return Math.max(1, Math.min(10, Number(record.effort_score || record.effortScore || record.effort || 1)));
+    return Math.max(1, Math.min(10, Number(record.effort_score || record.effort_score || record.effort || 1)));
 }
 
 function SpiralDna({ goal, checkIns, compact = false }: { goal: Goal | null; checkIns: CheckIn[]; compact?: boolean }) {
@@ -742,7 +742,7 @@ function SpiralDna({ goal, checkIns, compact = false }: { goal: Goal | null; che
 
 function getWallWeekNumber(goal: Goal | null): number {
     const record = (goal || {}) as { created_at?: string; createdAt?: string; started_at?: string; startDate?: string };
-    const rawDate = record.created_at || record.createdAt || record.started_at || record.startDate;
+    const rawDate = record.created_at || record.created_at || record.started_at || record.startDate;
     if (!rawDate) return 1;
     const started = new Date(rawDate).getTime();
     if (!Number.isFinite(started)) return 1;
@@ -753,7 +753,7 @@ function getWallWeekNumber(goal: Goal | null): number {
 function hasWallWeekCheckIn(checkIns: CheckIn[]): boolean {
     return checkIns.some((checkIn, index) => {
         const record = checkIn as unknown as { week_number?: number; weekNumber?: number; week?: number };
-        const week = Number(record.week_number || record.weekNumber || record.week || index + 1);
+        const week = Number(record.week_number || record.week_number || record.week || index + 1);
         return week === 3;
     });
 }
@@ -882,14 +882,14 @@ async function copyTextToClipboard(text: string): Promise<void> {
     textarea.value = text;
     textarea.setAttribute("readonly", "");
     textarea.className = "fixed left-[-9999px] top-0 opacity-0";
-    document.body.appendChild(textarea);
+    document.log_text.appendChild(textarea);
     textarea.focus();
     textarea.select();
 
     try {
         document.execCommand("copy");
     } finally {
-        document.body.removeChild(textarea);
+        document.log_text.removeChild(textarea);
     }
 }
 
@@ -906,7 +906,7 @@ function triggerCheckInConfetti() {
 
     const layer = document.createElement("div");
     layer.className = "pointer-events-none fixed inset-0 z-[9999] overflow-hidden";
-    document.body.appendChild(layer);
+    document.log_text.appendChild(layer);
 
     const colors = ["bg-cyan-300", "bg-fuchsia-400", "bg-amber-300", "bg-lime-300", "bg-white"];
     Array.from({ length: 34 }).forEach((_, index) => {
@@ -1105,7 +1105,7 @@ function startOnboardingTour(userId: string) {
         tourActive = false;
         window.localStorage.setItem(storageKey, "true");
         cleanup();
-        document.body.style.overflow = "";
+        document.log_text.style.overflow = "";
         document.documentElement.style.overflow = "";
     }
 
@@ -1123,7 +1123,7 @@ function startOnboardingTour(userId: string) {
         }
 
         // Scroll target into view first, then render after scroll settles
-        document.body.style.overflow = "hidden";
+        document.log_text.style.overflow = "hidden";
         document.documentElement.style.overflow = "hidden";
 
         target.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -1156,7 +1156,7 @@ function startOnboardingTour(userId: string) {
                 const d = document.createElement("div");
                 d.setAttribute("data-spiral-tour", "dim");
                 d.style.cssText = `position:fixed;${pos};background:rgba(0,0,0,0.82);z-index:9997;pointer-events:auto;transition:all 350ms ease;`;
-                document.body.appendChild(d);
+                document.log_text.appendChild(d);
             });
 
             // Ring
@@ -1173,7 +1173,7 @@ function startOnboardingTour(userId: string) {
         pointer-events:none;
         animation:tourRingPulse 2s ease-in-out infinite;
       `;
-            document.body.appendChild(ring);
+            document.log_text.appendChild(ring);
 
             // Inject pulse animation if not already there
             if (!document.getElementById("tour-keyframes")) {
@@ -1232,7 +1232,7 @@ function startOnboardingTour(userId: string) {
           </div>
         </div>
       `;
-            document.body.appendChild(bubble);
+            document.log_text.appendChild(bubble);
 
             bubble.querySelector("[data-tour-btn='close']")?.addEventListener("click", finish);
             bubble.querySelector("[data-tour-btn='prev']")?.addEventListener("click", () => {
@@ -1659,11 +1659,11 @@ type SpiralShareSnapshot = {
                 textarea.value = shareUrl;
                 textarea.style.position = 'fixed';
                 textarea.style.opacity = '0';
-                document.body.appendChild(textarea);
+                document.log_text.appendChild(textarea);
                 textarea.focus();
                 textarea.select();
                 document.execCommand('copy');
-                document.body.removeChild(textarea);
+                document.log_text.removeChild(textarea);
             }
             setCopiedShare(true);
             window.setTimeout(() => setCopiedShare(false), 2000);
@@ -1727,7 +1727,7 @@ type SpiralShareSnapshot = {
             const link = document.createElement("a");
             link.href = url;
             link.download = "spiral-share-card.svg";
-            document.body.appendChild(link);
+            document.log_text.appendChild(link);
             link.click();
             link.remove();
             URL.revokeObjectURL(url);
@@ -1885,7 +1885,6 @@ type SpiralShareSnapshot = {
                     week_number: currentWeek,
                     log_text: trimmedLogText,
                     effort_score: effortScore,
-                    mood: selectedMood,
                 });
                 setCheckIns((existing) => [...existing.filter((item) => item.week_number !== currentWeek), saved].sort((a, b) => a.week_number - b.week_number));
                 triggerCheckInConfetti();
@@ -2787,4 +2786,5 @@ export default function DashboardPage() {
         </ProtectedRoute>
     );
 }
+
 
