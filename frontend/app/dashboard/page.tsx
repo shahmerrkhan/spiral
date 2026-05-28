@@ -1610,10 +1610,10 @@ type SpiralShareSnapshot = {
                 weeksActive: stats.weeksActive,
                 summary: buildSpiralSummary(goalText, stats),
                 timeline: [...checkIns]
-                    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                    .sort((a, b) => new Date(b.created_at || new Date().toISOString()).getTime() - new Date(a.created_at || new Date().toISOString()).getTime())
                     .slice(0, 8)
                     .map((item) => ({
-                        date: item.created_at,
+                        date: item.created_at || new Date().toISOString(),
                         effort: getCheckInEffort(item),
                         note: getCheckInNote(item),
                     })),
