@@ -1677,9 +1677,9 @@ type SpiralShareSnapshot = {
             setCoachMessages((messages) => [...messages, userMessage]);
             setCoachInput("");
             setCoachLoading(true);
-            const recent = checkIns
+           const recent = checkIns
                 .slice(0, 5)
-                .map((checkIn) => `Week ${checkIn.weekNumber}: effort ${checkIn.effortScore}/10 — ${checkIn.body}`)
+                .map((checkIn) => `Week ${checkIn.week_number}: effort ${checkIn.effort_score}/10 — ${checkIn.log_text}`)
                 .join("\n");
             const context = `Goal: ${goal?.goal_text || "No active goal"}\nCurrent week: ${currentWeek}\nLogged weeks: ${streak}\nRecent check-ins:\n${recent || "No check-ins yet."}`;
 
