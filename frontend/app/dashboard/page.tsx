@@ -1299,7 +1299,7 @@ type SpiralShareSnapshot = {
         const thisWeekKey = getCalendarWeekKey(now);
         const lastWeekKey = getCalendarWeekKey(previousWeek);
         const scoresByWeek = checkIns.reduce<Record<string, number[]>>((acc, checkIn) => {
-            const key = getCalendarWeekKey(new Date(checkIn.created_at));
+            const createdDate = checkIn.created_at || new Date().toISOString(); const key = getCalendarWeekKey(new Date(createdDate));
             if (!acc[key]) acc[key] = [];
             acc[key].push(getCheckInEffort(checkIn));
             return acc;
@@ -2787,3 +2787,4 @@ export default function DashboardPage() {
         </ProtectedRoute>
     );
 }
+
