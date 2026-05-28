@@ -41,7 +41,8 @@ function buildLocalCoachResponse(
     weeksActive: number,
     weeksMissed: number,
     spiralScore: number,
-    checkIns: CheckIn[], CoachMood = inferCoachMood(userMessage)
+    checkIns: CheckIn[],
+    mood: CoachMood = inferCoachMood(userMessage)
 ) {
     const message = userMessage.trim();
     if (!message) return "Write one honest sentence. The spiral can work with that.";
