@@ -50,6 +50,8 @@ const allowedOrigins = new Set([
   "https://3000-ijv3f6kbjc42spen63n2m.e2b.app",
   "http://localhost:3000",
   "http://localhost:5173",
+  "https://spiral-lime.vercel.app",        // <-- Add your Frontend Domain
+  "https://spiral-rvyd.vercel.app"         // <-- Add your Backend Domain
 ]);
 
 const corsOptions = {
