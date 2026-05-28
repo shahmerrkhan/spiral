@@ -41,8 +41,7 @@ function buildLocalCoachResponse(
     weeksActive: number,
     weeksMissed: number,
     spiralScore: number,
-    checkIns: CheckIn[],
-    mood: CoachMood = inferCoachMood(userMessage)
+    checkIns: CheckIn[], CoachMood = inferCoachMood(userMessage)
 ) {
     const message = userMessage.trim();
     if (!message) return "Write one honest sentence. The spiral can work with that.";
@@ -62,7 +61,7 @@ function buildLocalCoachResponse(
     return `${moodCopy[mood]} ${line} You have ${weeksActive} active ${weeksActive === 1 ? "week" : "weeks"}, ${weeksMissed} missed ${weeksMissed === 1 ? "week" : "weeks"}, and a ${spiralScore}% spiral score. Next instruction: log the smallest undeniable proof.`;
 }
 
-function buildLocalWeeklyReflection(goal: Goal | null, currentWeek: number, streak: number, checkIns: CheckIn[], mood: CoachMood = "Focused"): WeeklyReflection {
+function buildLocalWeeklyReflection(goal: Goal | null, currentWeek: number, streak: number, checkIns: CheckIn[], CoachMood = "Focused"): WeeklyReflection {
     const goalText = goal?.goal_text?.trim() || "this goal";
     const effortTotal = checkIns.reduce((sum, checkIn) => sum + Number(checkIn.effort_score || 0), 0);
     const seed = goalText.length + currentWeek * 19 + streak * 23 + effortTotal + mood.length * 29;
@@ -2786,6 +2785,7 @@ export default function DashboardPage() {
         </ProtectedRoute>
     );
 }
+
 
 
 
