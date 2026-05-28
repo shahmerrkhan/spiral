@@ -1704,7 +1704,7 @@ type SpiralShareSnapshot = {
 ]);
             } catch {
                 const averageEffort = checkIns.length
-                    ? Math.round((checkIns.reduce((sum, checkIn) => sum + checkIn.effortScore, 0) / checkIns.length) * 10) / 10
+                    ? Math.round((checkIns.reduce((sum, checkIn) => sum + (checkIn.effort_score || 0), 0) / checkIns.length) * 10) / 10
                     : 0;
                 setCoachMessages((messages) => [
                     ...messages,
