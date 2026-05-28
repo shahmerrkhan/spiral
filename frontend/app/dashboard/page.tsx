@@ -1080,8 +1080,7 @@ function findTourTarget(step: TourStep): HTMLElement | null {
             const isButtonMatch = target.tagName === "BUTTON" || target.getAttribute("role") === "button";
             const score =
                 area +
-                (step.key === "log-button" && isButtonMatch ? -100000 : 0) +
-                (step.key !== "log-button" && target.matches("article, section") ? -50000 : 0);
+                (target.matches("article, section") ? -50000 : 0);
             return { target, rect, area, isVisible, isPageWrapper, score };
         })
         .filter((item, index, array) => item.isVisible && !item.isPageWrapper && array.findIndex((other) => other.target === item.target) === index)
