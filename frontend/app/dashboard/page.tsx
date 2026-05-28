@@ -50,7 +50,7 @@ function buildLocalCoachResponse(
     const effortTotal = checkIns.reduce((sum, checkIn) => sum + Number(checkIn.effort_score || 0), 0);
     const seed = message.length + currentWeek * 13 + streak * 7 + weeksActive * 5 + weeksMissed * 11 + spiralScore + effortTotal + mood.length * 17;
     const line = getLocalMotivationalLine(seed);
-    const goalText = goal?.title?.trim() || "the goal";
+    const goalText = goal?.goal_text?.trim() || "the goal";
 
     const moodCopy: Record<CoachMood, string> = {
         Focused: `Cut the noise. For week ${currentWeek}, protect one clean action for ${goalText}.`,
