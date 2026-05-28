@@ -63,7 +63,7 @@ function buildLocalCoachResponse(
 }
 
 function buildLocalWeeklyReflection(goal: Goal | null, currentWeek: number, streak: number, checkIns: CheckIn[], mood: CoachMood = "Focused"): WeeklyReflection {
-    const goalText = goal?.title?.trim() || "this goal";
+    const goalText = goal?.goal_text?.trim() || "this goal";
     const effortTotal = checkIns.reduce((sum, checkIn) => sum + Number(checkIn.effort_score || 0), 0);
     const seed = goalText.length + currentWeek * 19 + streak * 23 + effortTotal + mood.length * 29;
     const line = getLocalMotivationalLine(seed);
@@ -402,7 +402,7 @@ function WreckagePlayback({ checkIns }: { checkIns: CheckIn[] }) {
 }
 
 function generateWeeklyLetterFromPastSelf(goal: Goal | null, checkIns: CheckIn[], latestEffort: number, latestNote: string) {
-    const goalTitle = goal?.title?.trim() || "this goal";
+    const goalTitle = goal?.goal_text?.trim() || "this goal";
     const allEfforts = [...checkIns.map((checkIn) => Number(checkIn.effort_score ?? 0)), latestEffort].filter((score) => Number.isFinite(score) && score > 0);
     const totalShows = allEfforts.length;
     const averageEffort = allEfforts.length ? allEfforts.reduce((sum, score) => sum + score, 0) / allEfforts.length : latestEffort;
@@ -1683,7 +1683,7 @@ type SpiralShareSnapshot = {
                 .slice(0, 5)
                 .map((checkIn) => `Week ${checkIn.weekNumber}: effort ${checkIn.effortScore}/10 — ${checkIn.body}`)
                 .join("\n");
-            const context = `Goal: ${goal?.title || "No active goal"}\nCurrent week: ${currentWeek}\nLogged weeks: ${streak}\nRecent check-ins:\n${recent || "No check-ins yet."}`;
+            const context = `Goal: ${goal?.goal_text || "No active goal"}\nCurrent week: ${currentWeek}\nLogged weeks: ${streak}\nRecent check-ins:\n${recent || "No check-ins yet."}`;
 
             try {
                     const response = await fetchWithTimeout(`${API_BASE_URL}/api/coach`, {
@@ -1712,7 +1712,7 @@ type SpiralShareSnapshot = {
                     ...messages,
                     {
                         role: "coach",
-                        content: `Backend smoke. Here's the blunt read anyway: your goal is "${goal?.title || "undefined"}", you're on week ${currentWeek}, logged weeks ${streak}, average effort ${averageEffort || "unknown"}. Pick the smallest action you can repeat while tired. If week 3 keeps eating you, stop designing week 3 for your best self. Design it for the version of you that's exhausted.on of you that wants to disappear.`,
+                        content: `Backend smoke. Here's the blunt read anyway: your goal is "${goal?.goal_text || "undefined"}", you're on week ${currentWeek}, logged weeks ${streak}, average effort ${averageEffort || "unknown"}. Pick the smallest action you can repeat while tired. If week 3 keeps eating you, stop designing week 3 for your best self. Design it for the version of you that's exhausted.on of you that wants to disappear.`,
                     },
                 ]);
             } finally {
@@ -1720,7 +1720,7 @@ type SpiralShareSnapshot = {
                  setCoachLoading(false);
                 setCoachTyping(false);
             }
-        }, [API_BASE_URL, checkIns, coachInput, coachLoading, goal?.created_at, goal?.title, session?.token]);
+        }, [API_BASE_URL, checkIns, coachInput, coachLoading, goal?.created_at, goal?.goal_text, session?.token]);
 
         const downloadShareImage = useCallback(() => {
             if (!shareSnapshot || typeof window === "undefined") return;
