@@ -882,14 +882,14 @@ async function copyTextToClipboard(text: string): Promise<void> {
     textarea.value = text;
     textarea.setAttribute("readonly", "");
     textarea.className = "fixed left-[-9999px] top-0 opacity-0";
-    document.log_text.appendChild(textarea);
+    document.body.appendChild(textarea);
     textarea.focus();
     textarea.select();
 
     try {
         document.execCommand("copy");
     } finally {
-        document.log_text.removeChild(textarea);
+        document.body.removeChild(textarea);
     }
 }
 
@@ -906,7 +906,7 @@ function triggerCheckInConfetti() {
 
     const layer = document.createElement("div");
     layer.className = "pointer-events-none fixed inset-0 z-[9999] overflow-hidden";
-    document.log_text.appendChild(layer);
+    document.body.appendChild(layer);
 
     const colors = ["bg-cyan-300", "bg-fuchsia-400", "bg-amber-300", "bg-lime-300", "bg-white"];
     Array.from({ length: 34 }).forEach((_, index) => {
@@ -1105,7 +1105,7 @@ function startOnboardingTour(userId: string) {
         tourActive = false;
         window.localStorage.setItem(storageKey, "true");
         cleanup();
-        document.log_text.style.overflow = "";
+        document.body.style.overflow = "";
         document.documentElement.style.overflow = "";
     }
 
@@ -1123,7 +1123,7 @@ function startOnboardingTour(userId: string) {
         }
 
         // Scroll target into view first, then render after scroll settles
-        document.log_text.style.overflow = "hidden";
+        document.body.style.overflow = "hidden";
         document.documentElement.style.overflow = "hidden";
 
         target.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -1156,7 +1156,7 @@ function startOnboardingTour(userId: string) {
                 const d = document.createElement("div");
                 d.setAttribute("data-spiral-tour", "dim");
                 d.style.cssText = `position:fixed;${pos};background:rgba(0,0,0,0.82);z-index:9997;pointer-events:auto;transition:all 350ms ease;`;
-                document.log_text.appendChild(d);
+                document.body.appendChild(d);
             });
 
             // Ring
@@ -1173,7 +1173,7 @@ function startOnboardingTour(userId: string) {
         pointer-events:none;
         animation:tourRingPulse 2s ease-in-out infinite;
       `;
-            document.log_text.appendChild(ring);
+            document.body.appendChild(ring);
 
             // Inject pulse animation if not already there
             if (!document.getElementById("tour-keyframes")) {
@@ -1232,7 +1232,7 @@ function startOnboardingTour(userId: string) {
           </div>
         </div>
       `;
-            document.log_text.appendChild(bubble);
+            document.body.appendChild(bubble);
 
             bubble.querySelector("[data-tour-btn='close']")?.addEventListener("click", finish);
             bubble.querySelector("[data-tour-btn='prev']")?.addEventListener("click", () => {
@@ -1659,11 +1659,11 @@ type SpiralShareSnapshot = {
                 textarea.value = shareUrl;
                 textarea.style.position = 'fixed';
                 textarea.style.opacity = '0';
-                document.log_text.appendChild(textarea);
+                document.body.appendChild(textarea);
                 textarea.focus();
                 textarea.select();
                 document.execCommand('copy');
-                document.log_text.removeChild(textarea);
+                document.body.removeChild(textarea);
             }
             setCopiedShare(true);
             window.setTimeout(() => setCopiedShare(false), 2000);
@@ -1727,7 +1727,7 @@ type SpiralShareSnapshot = {
             const link = document.createElement("a");
             link.href = url;
             link.download = "spiral-share-card.svg";
-            document.log_text.appendChild(link);
+            document.body.appendChild(link);
             link.click();
             link.remove();
             URL.revokeObjectURL(url);
@@ -2786,5 +2786,6 @@ export default function DashboardPage() {
         </ProtectedRoute>
     );
 }
+
 
 
