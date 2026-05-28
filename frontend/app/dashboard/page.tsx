@@ -1391,9 +1391,9 @@ type SpiralShareSnapshot = {
             ...stats,
             summary: buildSpiralSummary(goalText, stats),
             timeline: [...checkIns]
-                .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+                .sort((a, b) => new Date(a.created_at || new Date().toISOString()).getTime() - new Date(b.created_at || new Date().toISOString()).getTime())
                 .slice(-18)
-                .map((item) => ({ date: item.created_at, effort: getCheckInEffort(item), note: getCheckInNote(item) })),
+                .map((item) => ({ date: item.created_at || new Date().toISOString(), effort: getCheckInEffort(item), note: getCheckInNote(item) })),
             createdAt: new Date().toISOString(),
         };
     }
