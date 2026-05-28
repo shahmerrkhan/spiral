@@ -1,3 +1,8 @@
+"use client";
+
+import React, { useState } from "react";
+import Link from "next/link";
+
 const bullets = [
   {
     title: "Pick the messy goal.",
@@ -13,29 +18,51 @@ const bullets = [
   },
 ];
 
-const prompts = [
-  "Get 1 million Instagram followers",
-  "Make $10k from a thing I built",
-  "Write a novel where people can see it",
-  "Run a marathon and stay normal about it",
-];
-
-const testimonials = [
+const promptDataset = [
   {
-    quote: "Spiral did not hype me up. Good. It made me write down what I actually did.",
-    name: "Nina Patel",
-    role: "Building a weird product",
+    id: "instagram",
+    tabLabel: "Get 1M followers",
+    title: "Get 1M Instagram followers",
+    short: "Get 1M followers",
+    score: "62%",
+    proofTitle: "Week 1 proof",
+    proofText: "Post 5 reels this week no matter what, even bad ones. Especially bad ones.",
+    weeksLogged: "5 / blank: 3",
+    grid: [8, 6, null, 9, null, 4, 7, null]
   },
   {
-    quote: "I missed two weeks. Nothing exploded. I logged it and kept going.",
-    name: "Theo Ramirez",
-    role: "Indie creator",
+    id: "startup",
+    tabLabel: "Make $10k from a thing",
+    title: "Make $10k from a thing I built",
+    short: "Make $10k Build",
+    score: "45%",
+    proofTitle: "Week 4 proof",
+    proofText: "DM 40 target customers with a painfully specific problem statement. Zero aesthetic adjustments allowed.",
+    weeksLogged: "3 / blank: 5",
+    grid: [9, null, null, 7, null, 8, null, null]
   },
   {
-    quote: "It feels like a notebook that calls your bluff. In a useful way.",
-    name: "Jordan Lee",
-    role: "Writer",
+    id: "novel",
+    tabLabel: "Write a novel openly",
+    title: "Write a novel where people can see it",
+    short: "Public Novel",
+    score: "81%",
+    proofTitle: "Week 12 proof",
+    proofText: "Write 4,000 messy words across four days. Do not open chapter one to correct typos.",
+    weeksLogged: "7 / blank: 1",
+    grid: [9, 8, 7, null, 9, 8, 9, 7]
   },
+  {
+    id: "marathon",
+    tabLabel: "Run a clean marathon",
+    title: "Run a marathon and stay normal about it",
+    short: "Normal Marathon",
+    score: "73%",
+    proofTitle: "Week 8 proof",
+    proofText: "Run 3 times this week: two short shameless local jogs and one highly uncomfortable long interval slog.",
+    weeksLogged: "6 / blank: 2",
+    grid: [6, 7, null, 8, 9, null, 7, 8]
+  }
 ];
 
 const proof = [
@@ -74,108 +101,151 @@ const proof = [
 ];
 
 export default function Home() {
-  return (
-    <main className="min-h-screen overflow-x-hidden bg-[#03020a] pb-24 text-white [scroll-behavior:smooth] sm:pb-0">
-      <div className="pointer-events-none fixed inset-0 opacity-80">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.055)_1px,transparent_1px)] bg-[size:72px_72px] motion-safe:animate-pulse" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(34,211,238,0.24),transparent_34%),radial-gradient(circle_at_85%_18%,rgba(217,70,239,0.2),transparent_32%),radial-gradient(circle_at_12%_82%,rgba(59,130,246,0.16),transparent_28%)]" />
-        <div className="absolute left-1/2 top-[-10%] h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-cyan-500/25 blur-[120px] motion-safe:animate-pulse" />
-        <div className="absolute bottom-[-20%] right-[-10%] h-[520px] w-[520px] rounded-full bg-purple-700/30 blur-[140px] motion-safe:animate-pulse" />
-      </div>
-      <section className="relative isolate flex min-h-screen items-center px-4 py-8 sm:px-10 lg:px-16">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_15%_20%,rgba(38,99,255,0.38),transparent_30%),radial-gradient(circle_at_85%_10%,rgba(168,85,247,0.34),transparent_28%),radial-gradient(circle_at_60%_85%,rgba(14,165,233,0.18),transparent_35%)]" />
-        <div className="absolute inset-0 -z-10 opacity-30 [background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:42px_42px] animate-pulse" />
-        <div className="absolute left-[12%] top-[18%] -z-10 h-3 w-3 animate-bounce rounded-full bg-cyan-300 shadow-[0_0_28px_rgba(103,232,249,0.9)]" />
-        <div className="absolute right-[18%] top-[26%] -z-10 h-2 w-2 animate-ping rounded-full bg-fuchsia-300" />
-        <div className="absolute bottom-[22%] left-[48%] -z-10 h-2 w-2 animate-pulse rounded-full bg-blue-300" />
-        <div className="absolute left-1/2 top-0 -z-10 h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-blue-600/10 blur-3xl" />
-        <div className="absolute inset-x-0 bottom-0 -z-10 h-48 bg-gradient-to-t from-[#05030b] to-transparent" />
+  const [activeProfile, setActiveProfile] = useState(promptDataset[0]);
 
-        <div className="mx-auto grid w-full max-w-7xl items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="space-y-8">
-            <div className="inline-flex items-center gap-3 rounded-full border border-blue-400/30 bg-blue-500/10 px-4 py-2 text-sm font-black uppercase tracking-[0.24em] text-blue-200 shadow-[0_0_40px_rgba(59,130,246,0.22)]">
-              <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.9)]" />
-              Spiral / goal tracking for messy people
+  return (
+    <main className="min-h-screen overflow-x-hidden bg-[#03020a] pb-24 text-white selection:bg-cyan-500/30 font-sans [scroll-behavior:smooth] transition-colors duration-500 sm:pb-0">
+      
+      {/* BACKGROUND GRAPH INFRASRUCTURE & ANIMATED RADIAL GLOWS */}
+      <div className="pointer-events-none fixed inset-0 z-0 opacity-90 mix-blend-screen">
+        {/* Shifting Grid Line Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:56px_56px] transition-all duration-700" />
+        
+        {/* Fluid Dynamic Ambient Auroras */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(34,211,238,0.15),transparent_45%),radial-gradient(circle_at_85%_20%,rgba(217,70,239,0.12),transparent_40%),radial-gradient(circle_at_15%_80%,rgba(59,130,246,0.1),transparent_35%)] animate-[pulse_8s_ease-in-out_infinite]" />
+        
+        {/* Moving Hyper-Glow Focus Elements */}
+        <div className="absolute left-1/3 top-[-10%] h-[650px] w-[650px] rounded-full bg-cyan-500/10 blur-[130px] animate-[pulse_6s_ease-in-out_infinite]" />
+        <div className="absolute bottom-[-10%] right-[-5%] h-[600px] w-[600px] rounded-full bg-purple-600/10 blur-[140px] animate-[pulse_10s_ease-in-out_infinite]" />
+      </div>
+
+      {/* FIXED PREMIUM NAVIGATION CONTAINER */}
+      <header className="relative z-50 max-w-7xl mx-auto px-6 h-24 flex items-center justify-between border-b border-white/[0.04] backdrop-blur-md">
+        <div className="flex items-center space-x-3.5 group cursor-default">
+          <div className="relative w-2.5 h-2.5">
+            <div className="absolute inset-0 rounded-full bg-cyan-400 shadow-[0_0_15px_rgba(34,211,238,1)] animate-ping" />
+            <div className="relative w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+          </div>
+          <span className="font-mono text-xs font-black tracking-[0.25em] text-slate-400 bg-slate-900/80 px-3.5 py-2 rounded-lg border border-white/[0.05] shadow-inner transition-all duration-300 group-hover:border-cyan-500/30 group-hover:text-cyan-300">
+            SPIRAL // ENGINE_CORE_V1
+          </span>
+        </div>
+        <div className="flex items-center space-x-6">
+          <Link href="/login" className="text-sm font-semibold text-slate-400 hover:text-white transition-all duration-200 hover:translate-y-[-1px]">
+            Sign In
+          </Link>
+          <Link href="/signup" className="relative group overflow-hidden text-sm font-black bg-white text-slate-950 px-5 py-2.5 rounded-xl transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] shadow-xl shadow-white/5 hover:shadow-white/10">
+            <span className="relative z-10">Get Started</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-cyan-200 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-0" />
+          </Link>
+        </div>
+      </header>
+
+      {/* HERO SECTION INTERACTIVE SIMULATOR */}
+      <section className="relative z-10 isolate flex min-h-[calc(100vh-6rem)] items-center px-4 py-8 sm:px-10 lg:px-16">
+        <div className="mx-auto grid w-full max-w-7xl items-center gap-16 lg:grid-cols-[1.15fr_0.85fr]">
+          
+          {/* LEFT COMMAND MODULE */}
+          <div className="space-y-10">
+            {/* Tag Badge */}
+            <div className="inline-flex items-center gap-3 rounded-full border border-blue-400/20 bg-blue-500/5 px-4 py-2 text-xs font-black uppercase tracking-[0.24em] text-blue-300 shadow-[0_0_30px_rgba(59,130,246,0.12)] backdrop-blur-md animate-[pulse_4s_ease-in-out_infinite]">
+              <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(103,232,249,1)]" />
+              Goal tracking for messy people
             </div>
 
-            <div className="space-y-5">
-              <h1 className="max-w-6xl text-5xl font-black uppercase leading-[0.82] tracking-[-0.085em] text-white sm:text-8xl sm:leading-[0.78] sm:tracking-[-0.095em] lg:text-9xl">
-                <span className="block animate-pulse drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]">Track the goal</span>
-                <span className="block bg-gradient-to-r from-cyan-300 via-blue-400 to-fuchsia-400 bg-clip-text text-transparent">
-                  <span className="bg-[linear-gradient(90deg,#67e8f9,#a78bfa,#f0abfc,#67e8f9)] bg-[length:300%_100%] bg-clip-text text-transparent motion-safe:animate-pulse">without lying.</span>
+            {/* Typography Engine Area */}
+            <div className="space-y-6">
+              <h1 className="max-w-6xl text-5xl font-black uppercase leading-[0.82] tracking-[-0.06em] text-white sm:text-7xl lg:text-[5.8rem] xl:text-[6.8rem]">
+                <span className="block drop-shadow-[0_0_40px_rgba(255,255,255,0.12)] transition-transform duration-500 hover:scale-[1.005]">Track the goal</span>
+                <span className="block bg-gradient-to-r from-cyan-400 via-blue-400 to-fuchsia-400 bg-clip-text text-transparent filter contrast-[110%] animate-[pulse_6s_ease-in-out_infinite]">
+                  without lying.
                 </span>
               </h1>
-              <p className="max-w-2xl text-base font-semibold leading-7 text-zinc-300 sm:text-2xl sm:leading-9">
-                Spiral is goal tracking that expects chaos. Pick the thing. Log what happened. Use the evidence. No guilt. No streak cult.
+              <p className="max-w-xl text-base font-medium leading-relaxed text-zinc-400 sm:text-xl transition-all duration-300 hover:text-zinc-300">
+                Spiral is goal tracking that expects chaos. Pick the thing. Log what happened. Use the evidence. No guilt. <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-400 font-black tracking-wide underline decoration-fuchsia-500/30 underline-offset-4">No streak cult.</span>
               </p>
             </div>
 
-            <div className="flex flex-col gap-4 sm:flex-row">
-              <a
+            {/* Premium CTA Buttons with Magnetic Acceleration effects */}
+            <div className="flex flex-col gap-4 sm:flex-row max-w-md">
+              <Link
                 href="/signup"
-                className="group min-h-14 rounded-2xl bg-gradient-to-r from-blue-500 via-cyan-400 to-purple-500 px-8 py-4 text-center text-base font-black uppercase tracking-wide text-[#05030b] shadow-[0_0_42px_rgba(59,130,246,0.45)] transition duration-300 active:scale-95 hover:scale-[1.02] hover:shadow-[0_0_70px_rgba(34,211,238,0.55)]"
+                className="group flex-1 min-h-14 flex items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 via-cyan-500 to-purple-600 px-8 py-4 text-center text-base font-black uppercase tracking-wide text-[#03020a] shadow-[0_0_40px_rgba(59,130,246,0.25)] transition-all duration-300 ease-out active:scale-[0.96] hover:scale-[1.02] hover:shadow-[0_0_55px_rgba(34,211,238,0.45)]"
               >
-                Start tracking
-                <span className="inline-block transition group-hover:translate-x-1"> →</span>
-              </a>
-              <a
+                <span>Start tracking</span>
+                <span className="inline-block ml-2 transition-transform duration-300 group-hover:translate-x-1.5"> →</span>
+              </Link>
+              <Link
                 href="/login"
-                className="min-h-14 rounded-2xl border border-white/15 bg-white/5 px-8 py-4 text-center text-base font-black uppercase tracking-wide text-white backdrop-blur transition duration-300 active:scale-95 hover:border-cyan-300/60 hover:bg-cyan-300/10"
+                className="flex-1 min-h-14 flex items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] px-8 py-4 text-center text-base font-black uppercase tracking-wide text-white backdrop-blur-md transition-all duration-200 active:scale-[0.96] hover:border-cyan-400/40 hover:bg-cyan-400/[0.08]"
               >
                 I already fell off
-              </a>
+              </Link>
             </div>
 
-            <div className="grid gap-4 pt-2 md:grid-cols-3">
+            {/* Static Content Cards transformed with Micro-Borders */}
+            <div className="grid gap-4 pt-4 md:grid-cols-3">
               {bullets.map((item, index) => (
                 <article
                   key={item.title}
-                  className="rounded-3xl border border-white/10 bg-white/[0.055] p-5 shadow-2xl shadow-black/30 backdrop-blur"
+                  className="group relative rounded-2xl border border-white/[0.05] bg-white/[0.02] p-5 shadow-2xl shadow-black/40 backdrop-blur-sm transition-all duration-300 hover:border-white/[0.12] hover:bg-white/[0.04] hover:translate-y-[-2px]"
                 >
-                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-500/20 text-lg font-black text-cyan-200 ring-1 ring-cyan-300/30">
+                  <div className="mb-4 flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-xs font-mono font-black text-cyan-300 border border-cyan-500/20 transition-all duration-300 group-hover:border-cyan-400/50 group-hover:bg-cyan-400/20 group-hover:text-white">
                     0{index + 1}
                   </div>
-                  <h2 className="text-lg font-black uppercase leading-5 tracking-tight text-white">{item.title}</h2>
-                  <p className="mt-3 text-sm font-medium leading-6 text-zinc-400">{item.body}</p>
+                  <h2 className="text-sm font-black uppercase tracking-tight text-white transition-colors duration-200 group-hover:text-cyan-300">{item.title}</h2>
+                  <p className="mt-2 text-xs font-semibold leading-relaxed text-zinc-400 transition-colors duration-200 group-hover:text-zinc-300">{item.body}</p>
                 </article>
               ))}
             </div>
           </div>
 
-          <div className="relative mx-auto w-full max-w-xl lg:ml-auto">
-            <div className="absolute -inset-6 rounded-[2.5rem] bg-gradient-to-br from-blue-500/30 via-purple-500/20 to-cyan-400/20 blur-2xl" />
-            <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#0b0718]/90 p-5 shadow-2xl shadow-blue-950/40 backdrop-blur-xl sm:p-7">
-              <div className="mb-6 flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-300">Goal on the table</p>
-                  <h3 className="mt-2 text-2xl font-black uppercase tracking-tight text-white">Get 1M followers</h3>
+          {/* RIGHT BLOCK: HIGH-FIDELITY LIVE INTERACTIVE CONSOLE */}
+          <div className="relative mx-auto w-full max-w-md lg:ml-auto group/card">
+            {/* Adaptive Interactive Aura Mesh */}
+            <div className="absolute -inset-4 rounded-[2.5rem] bg-gradient-to-br from-blue-500/20 via-purple-500/10 to-cyan-400/15 blur-2xl opacity-80 group-hover/card:opacity-100 transition-all duration-500 pointer-events-none" />
+            
+            <div className="relative overflow-hidden rounded-3xl border border-white/[0.07] bg-[#0c091b]/95 p-6 shadow-2xl shadow-blue-950/40 backdrop-blur-xl sm:p-7 transition-all duration-300 group-hover/card:border-white/[0.12]">
+              
+              {/* Dynamic Header Module */}
+              <div className="mb-6 flex items-start justify-between gap-4 border-b border-white/[0.06] pb-5">
+                <div className="space-y-1">
+                  <p className="text-[9px] font-mono font-bold uppercase tracking-[0.35em] text-cyan-400 filter drop-shadow-[0_0_8px_rgba(34,211,238,0.3)]">Goal on the table</p>
+                  <h3 className="text-xl font-black uppercase tracking-tight text-white transition-all duration-500 ease-out transform">
+                    {activeProfile.short}
+                  </h3>
                 </div>
-                <div className="rounded-2xl border border-purple-300/20 bg-purple-500/10 px-4 py-3 text-right">
-                  <p className="text-xs font-bold uppercase text-zinc-400">Spiral score</p>
-                  <p className="text-3xl font-black text-purple-200">62%</p>
+                <div className="rounded-xl border border-purple-500/20 bg-purple-500/5 px-3.5 py-2.5 text-right backdrop-blur-sm shadow-inner transition-all duration-300">
+                  <p className="text-[9px] font-mono font-bold uppercase tracking-wider text-purple-400/70">Spiral score</p>
+                  <p className="text-2xl font-black text-purple-200 mt-0.5 tracking-tight transition-all duration-500 animate-pulse">{activeProfile.score}</p>
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-cyan-300/20 bg-cyan-300/10 p-5">
-                <p className="text-xs font-black uppercase tracking-[0.28em] text-cyan-200">Week 1 proof</p>
-                <p className="mt-3 text-xl font-black leading-7 text-white">
-                  Post 5 reels this week no matter what, even bad ones. Especially bad ones.
+              {/* Dynamic Output Monitor Panel */}
+              <div className="relative rounded-2xl border border-cyan-400/15 bg-cyan-400/[0.02] p-5 shadow-inner group/proof overflow-hidden transition-all duration-300 hover:bg-cyan-400/[0.04]">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.02] to-transparent transform translate-x-[-100%] group-hover/proof:translate-x-[100%] transition-transform duration-1000 ease-in-out" />
+                <span className="inline-block text-[9px] font-mono font-bold uppercase tracking-[0.25em] text-cyan-300 bg-cyan-950/50 px-2 py-0.5 rounded border border-cyan-800/40">
+                  {activeProfile.proofTitle}
+                </span>
+                <p className="mt-3.5 text-sm font-semibold leading-relaxed text-slate-200 transition-all duration-500 min-h-[3rem]">
+                  "{activeProfile.proofText}"
                 </p>
               </div>
 
+              {/* Matrix Frame Grid Registry Component */}
               <div className="mt-6 space-y-3">
-                <div className="flex items-center justify-between text-sm font-bold text-zinc-400">
-                  <span>Your Spiral</span>
-                  <span>Weeks logged: 5 / blank: 3</span>
+                <div className="flex items-center justify-between text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
+                  <span>YOUR SPIRAL REGISTRY</span>
+                  <span className="text-zinc-400 font-semibold transition-all duration-300">{activeProfile.weeksLogged}</span>
                 </div>
-                <div className="grid grid-cols-8 gap-3">
-                  {[8, 6, null, 9, null, 4, 7, null].map((score, index) => (
+                <div className="grid grid-cols-8 gap-2.5">
+                  {activeProfile.grid.map((score, index) => (
                     <div
                       key={index}
-                      className={`flex aspect-square items-center justify-center rounded-full border text-sm font-black ${
+                      className={`flex aspect-square items-center justify-center rounded-xl border text-xs font-mono font-black transition-all duration-500 transform hover:scale-110 hover:z-10 ${
                         score
-                          ? "border-cyan-200 bg-gradient-to-br from-cyan-300 to-blue-500 text-[#05030b] shadow-[0_0_24px_rgba(34,211,238,0.45)]"
-                          : "border-white/20 bg-white/5 text-zinc-600"
+                          ? "border-cyan-400/40 bg-gradient-to-br from-cyan-400/10 to-blue-500/10 text-cyan-300 shadow-[0_0_15px_rgba(34,211,238,0.12)] hover:border-cyan-300 hover:shadow-[0_0_20px_rgba(34,211,238,0.3)]"
+                          : "border-white/[0.04] bg-white/[0.01] text-zinc-800"
                       }`}
                     >
                       {score ?? ""}
@@ -184,75 +254,106 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="mt-6 rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-                <p className="text-sm font-bold text-zinc-400">Example goals. Big. Dumb. Real:</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {prompts.map((prompt) => (
-                    <span key={prompt} className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-black uppercase tracking-wide text-zinc-200">
-                      {prompt}
-                    </span>
-                  ))}
+              {/* Interactive Control Console Input Layer */}
+              <div className="mt-6 rounded-2xl border border-white/[0.05] bg-white/[0.01] p-4 space-y-3">
+                <p className="text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
+                  CLICK PROMPT CONTEXT TO HOT-SWAP REGISTRY:
+                </p>
+                <div className="flex flex-col gap-1.5">
+                  {promptDataset.map((prompt) => {
+                    const isSelected = activeProfile.id === prompt.id;
+                    return (
+                      <button 
+                        key={prompt.id}
+                        onClick={() => setActiveProfile(prompt)}
+                        className={`w-full text-left text-[11px] px-3.5 py-2.5 rounded-xl border font-mono transition-all duration-300 ease-out flex items-center justify-between group/btn ${
+                          isSelected
+                            ? "bg-white/[0.06] border-white/15 text-cyan-300 font-bold translate-x-1.5 shadow-md"
+                            : "bg-transparent border-transparent text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.02] hover:translate-x-1"
+                        }`}
+                      >
+                        <span className="truncate pr-2 transition-colors duration-200">{prompt.title}</span>
+                        <div className="relative flex items-center justify-center w-2 h-2 shrink-0">
+                          <div className={`absolute inset-0 rounded-full bg-cyan-400 transition-transform duration-300 ${isSelected ? "scale-150 animate-ping opacity-60" : "scale-0 opacity-0 group-hover/btn:scale-100 group-hover/btn:opacity-40"}`} />
+                          <div className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${isSelected ? "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,1)]" : "bg-zinc-700"}`} />
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
+
             </div>
           </div>
         </div>
       </section>
 
-      <section className="relative border-y border-white/10 bg-black/20 px-6 py-20 backdrop-blur sm:px-10 lg:px-16">
-        <div className="absolute left-10 top-10 h-24 w-24 rounded-full bg-cyan-300/10 blur-2xl" />
-        <div className="mx-auto mb-12 max-w-6xl">
-          <p className="text-xs font-black uppercase tracking-[0.45em] text-cyan-300">First setup</p>
-          <h2 className="mt-4 max-w-4xl text-5xl font-black uppercase leading-none tracking-[-0.075em] text-white sm:text-7xl">Start simple. Keep it honest.</h2>
+      {/* THREE-COLUMN ARCHITECTURE GRID WITH STEPPED TRANSITIONS */}
+      <section className="relative border-y border-white/[0.04] bg-black/[0.15] px-6 py-24 backdrop-blur-sm sm:px-10 lg:px-16">
+        <div className="mx-auto mb-16 max-w-6xl">
+          <p className="text-xs font-black uppercase tracking-[0.45em] text-cyan-400">Execution framework</p>
+          <h2 className="mt-4 max-w-4xl text-4xl font-black uppercase leading-none tracking-tight text-white sm:text-6xl">Start simple. Keep it honest.</h2>
         </div>
-        <div className="mx-auto grid max-w-6xl gap-5 md:grid-cols-3">
+        <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
           {[
-            ["01", "Name the thing", "One goal. Not ten. Write the thing you keep thinking about, even if it sounds too big."],
-            ["02", "Make proof for this week", "Pick one action you can actually do. Small is fine. Fake plans are not."],
-            ["03", "Come back either way", "Did it? Log it. Missed it? Log that too. Spiral works better when you stop hiding the mess."],
+            ["01", "Name the thing", "One goal. Not ten. Write the thing you keep thinking about, even if it sounds too big for a single frame."],
+            ["02", "Make proof for this week", "Pick one specific action you can actually build or finish. Small is useful. Hyped architecture maps are not."],
+            ["03", "Come back either way", "Executed it? Log the receipt. Missed it? Log that layout too. Spiral works perfectly when you stop hiding the raw data."],
           ].map(([number, title, body]) => (
-            <div key={title} className="group rounded-[2.35rem] border border-white/10 bg-white/[0.055] p-8 shadow-2xl shadow-blue-950/20 transition duration-300 hover:-translate-y-3 hover:border-cyan-300/50 hover:bg-cyan-300/[0.06] hover:shadow-cyan-950/30">
-              <p className="text-6xl font-black tracking-[-0.12em] text-cyan-300/80 transition group-hover:text-fuchsia-300">{number}</p>
-              <h3 className="mt-7 text-3xl font-black uppercase leading-none tracking-[-0.055em]">{title}</h3>
-              <p className="mt-5 text-base font-semibold leading-7 text-zinc-400">{body}</p>
+            <div key={title} className="group rounded-3xl border border-white/[0.05] bg-white/[0.02] p-8 shadow-xl shadow-blue-950/10 transition-all duration-300 hover:translate-y-[-4px] hover:border-cyan-400/40 hover:bg-cyan-400/[0.02] hover:shadow-[0_10px_30px_rgba(34,211,238,0.05)]">
+              <p className="text-5xl font-black tracking-tighter text-cyan-400/60 transition-colors duration-300 group-hover:text-fuchsia-400">{number}</p>
+              <h3 className="mt-6 text-2xl font-black uppercase leading-none tracking-tight text-white transition-colors duration-200 group-hover:text-cyan-300">{title}</h3>
+              <p className="mt-4 text-sm font-medium leading-relaxed text-zinc-400 transition-colors duration-200 group-hover:text-zinc-300">{body}</p>
             </div>
           ))}
         </div>
       </section>
 
+      {/* HIGHER FREQUENCY LOG STREAM WITH INTERACTION MATRIX */}
       <section className="px-6 py-24 sm:px-10 lg:px-16">
         <div className="mx-auto max-w-6xl">
-          <div className="mb-12 flex flex-col justify-between gap-5 md:flex-row md:items-end">
+          <div className="mb-16 flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.45em] text-fuchsia-300">Real logs</p>
-              <h2 className="mt-4 max-w-3xl text-5xl font-black uppercase leading-none tracking-[-0.075em] sm:text-7xl">Proof beats vibes.</h2>
+              <p className="text-xs font-black uppercase tracking-[0.42em] text-fuchsia-400">Verified pipeline activity</p>
+              <h2 className="mt-4 max-w-3xl text-4xl font-black uppercase leading-none tracking-tight sm:text-6xl">Proof beats vibes.</h2>
             </div>
-            <a href="/signup" className="rounded-full bg-white px-7 py-4 text-sm font-black uppercase text-[#05030b] shadow-[0_0_34px_rgba(255,255,255,0.28)] transition motion-safe:animate-pulse hover:scale-105 hover:bg-cyan-200 active:scale-95">Start one now</a>
+            <Link href="/signup" className="group rounded-xl bg-white px-6 py-3.5 text-sm font-black uppercase text-[#03020a] shadow-lg transition-all duration-300 hover:scale-[1.04] hover:bg-cyan-200 active:scale-95 hover:shadow-cyan-300/20">
+              Start Your Log
+            </Link>
           </div>
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {proof.map((item) => (
-              <div key={item.name} className="group relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-white/[0.09] to-white/[0.025] p-7 transition duration-300 hover:-translate-y-3 hover:border-fuchsia-300/50 hover:shadow-2xl hover:shadow-fuchsia-950/25">
-                <div className="absolute -right-12 -top-12 h-36 w-36 rounded-full bg-fuchsia-400/20 blur-3xl transition group-hover:bg-cyan-300/25" />
-                <div className="relative mb-7 flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xl font-black uppercase leading-none">{item.name}</p>
-                    <p className="mt-2 text-xs font-black uppercase tracking-[0.25em] text-cyan-300">{item.week}</p>
+              <div key={item.name} className="group relative overflow-hidden rounded-3xl border border-white/[0.05] bg-gradient-to-br from-white/[0.03] to-white/[0.005] p-6 transition-all duration-300 hover:translate-y-[-4px] hover:border-fuchsia-400/40 hover:shadow-[0_12px_40px_rgba(217,70,239,0.05)]">
+                <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-fuchsia-500/5 blur-2xl transition-all duration-500 group-hover:bg-cyan-400/15" />
+                
+                <div className="relative mb-6 flex items-start justify-between gap-4">
+                  <div className="space-y-1">
+                    <p className="text-lg font-black uppercase leading-none tracking-wide text-white transition-colors duration-200 group-hover:text-fuchsia-300">{item.name}</p>
+                    <p className="text-[9px] font-mono font-bold uppercase tracking-wider text-cyan-400">{item.week}</p>
                   </div>
-                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-cyan-300/30 bg-cyan-300/10 text-lg font-black text-cyan-100 shadow-[0_0_28px_rgba(34,211,238,0.18)] group-hover:animate-spin">{item.score}</div>
-                </div>
-                <p className="relative text-2xl font-black uppercase leading-[0.95] tracking-[-0.06em] text-white">{item.goal}</p>
-                <div className="relative mt-5 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                  <p className="text-[0.65rem] font-black uppercase tracking-[0.22em] text-zinc-500">Logged weeks</p>
-                  <p className="mt-1 text-sm font-black uppercase tracking-[0.16em] text-cyan-200">{item.streak}</p>
-                </div>
-                <p className="relative mt-5 rounded-2xl border border-fuchsia-300/20 bg-fuchsia-400/10 p-5 text-sm font-bold leading-6 text-fuchsia-100">&ldquo;{item.line}&rdquo;</p>
-                <div className="relative mt-6">
-                  <div className="flex justify-between text-[0.65rem] font-black uppercase tracking-[0.22em] text-zinc-500">
-                    <span>Spiral score</span>
-                    <span>{item.score}/100</span>
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-cyan-400/20 bg-cyan-400/5 text-xs font-mono font-black text-cyan-200 shadow-inner group-hover:rotate-[360deg] transition-transform duration-700 ease-out">
+                    {item.score}
                   </div>
-                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
-                    <div className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-fuchsia-400" style={{ width: `${item.score}%` }} />
+                </div>
+
+                <p className="relative text-xl font-black uppercase leading-tight tracking-tight text-white min-h-[3rem] line-clamp-2">{item.goal}</p>
+                
+                <div className="relative mt-4 rounded-xl border border-white/[0.04] bg-black/40 px-3.5 py-2">
+                  <p className="text-[9px] font-mono font-bold uppercase tracking-wider text-zinc-500">Registered frames</p>
+                  <p className="mt-0.5 text-xs font-mono font-bold uppercase tracking-wide text-cyan-300">{item.streak}</p>
+                </div>
+                
+                <p className="relative mt-4 rounded-xl border border-fuchsia-500/10 bg-fuchsia-500/[0.02] p-4 text-xs font-semibold leading-relaxed text-fuchsia-200/80 italic transition-colors duration-200 group-hover:bg-fuchsia-500/[0.04]">
+                  &ldquo;{item.line}&rdquo;
+                </p>
+
+                <div className="relative mt-5 space-y-2">
+                  <div className="flex justify-between text-[9px] font-mono font-bold uppercase tracking-wider text-zinc-500">
+                    <span>Spiral integrity</span>
+                    <span>{item.score}%</span>
+                  </div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.05]">
+                    <div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-fuchsia-400 transition-all duration-1000 ease-out" style={{ width: `${item.score}%` }} />
                   </div>
                 </div>
               </div>
@@ -261,15 +362,21 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-t border-white/10 px-6 py-24 sm:px-10 lg:px-16">
-        <div className="mx-auto max-w-4xl text-center">
-          <h2 className="text-5xl font-black uppercase leading-none tracking-[-0.06em] sm:text-7xl">
-            Ready to track the <span className="bg-gradient-to-r from-cyan-300 to-fuchsia-400 bg-clip-text text-transparent">mess?</span>
+      {/* FINAL CONVERSION MODULE CONTAINER */}
+      <section className="border-t border-white/[0.04] px-6 py-28 sm:px-10 lg:px-16 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.04),transparent_50%)] pointer-events-none" />
+        <div className="mx-auto max-w-4xl text-center space-y-8 relative z-10">
+          <h2 className="text-4xl font-black uppercase leading-none tracking-tight sm:text-6xl">
+            Ready to track the <span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-fuchsia-400 bg-clip-text text-transparent filter contrast-125">mess?</span>
           </h2>
-          <p className="mt-6 text-xl font-medium text-zinc-300">Stop pretending it will be neat. Start logging what happens.</p>
-          <a href="/signup" className="mt-10 inline-block rounded-2xl bg-gradient-to-r from-blue-500 via-cyan-400 to-purple-500 px-12 py-5 text-lg font-black uppercase tracking-wide text-[#05030b] shadow-[0_0_42px_rgba(59,130,246,0.45)] transition duration-300 hover:scale-[1.02] hover:shadow-[0_0_70px_rgba(34,211,238,0.55)]">
-            Start tracking &rarr;
-          </a>
+          <p className="mx-auto max-w-lg text-base font-medium text-zinc-400 sm:text-lg">
+            Stop pretending execution will be perfectly neat. Build out your goals. Registry stays open. Start logging what happens.
+          </p>
+          <div className="pt-4">
+            <Link href="/signup" className="group relative inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 via-cyan-500 to-purple-600 px-12 py-5 text-base font-black uppercase tracking-wide text-[#03020a] shadow-[0_0_45px_rgba(59,130,246,0.25)] transition-all duration-300 active:scale-[0.96] hover:scale-[1.02] hover:shadow-[0_0_65px_rgba(34,211,238,0.5)]">
+              <span>Start tracking &rarr;</span>
+            </Link>
+          </div>
         </div>
       </section>
     </main>
