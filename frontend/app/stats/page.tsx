@@ -1,11 +1,11 @@
 "use client";
 
+import { CheckIn, getActiveGoal, getCheckIns, getStoredSession, Goal } from "@/lib/supabase";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { BarChart3, LineChart, Trophy, Type, Zap } from "lucide-react";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { ProtectedRoute } from "@/components/protected-route";
-import { CheckIn, getActiveGoal, getCheckIns, Goal } from "@/lib/supabase";
 
 type MonthStats = {
   key: string;
@@ -77,8 +77,10 @@ function StatsContent() {
     let mounted = true;
     async function loadStats() {
       try {
-        const activeGoal = await getActiveGoal();
-        const logs = await getCheckIns();
+        const session = getStoredSession();
+        if (!session) return;
+        const activeGoal = await getActiveGoal(session);
+        const logs = activeGoal ? await getCheckIns(session, activeGoal.id) : [];
         if (!mounted) return;
         setGoal(activeGoal);
         setCheckIns(Array.isArray(logs) ? logs : []);
