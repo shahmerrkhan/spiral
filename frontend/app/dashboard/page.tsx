@@ -1024,10 +1024,9 @@ function startAmbientSoundtrack(settings: SoundtrackSettings): () => void {
 }
 
 type TourStep = {
-    key: string;
-    title: string;
-    body: string;
-    match: (text: string) => boolean;
+  selector: string;
+  title: string;
+  description: string;
 };
 
 const TOUR_STEPS = [
