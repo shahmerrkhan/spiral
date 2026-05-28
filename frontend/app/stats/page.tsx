@@ -77,7 +77,7 @@ function StatsContent() {
     let mounted = true;
     async function loadStats() {
       try {
-        const activeGoal = await getActiveGoal(session);
+        const activeGoal = await getActiveGoal();
         const logs = await getCheckIns();
         if (!mounted) return;
         setGoal(activeGoal);
