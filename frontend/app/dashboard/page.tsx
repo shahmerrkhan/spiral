@@ -318,18 +318,14 @@ function WreckagePlayback({ checkIns }: { checkIns: CheckIn[] }) {
                     <div className="h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]" style={{ animation: playbackState === "playing" ? "pulse 1s infinite" : "none" }} />
                     <p className="text-xs font-black uppercase tracking-[0.4em] text-cyan-200">Wreckage Playback</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                     <button type="button" onClick={handlePlay} disabled={playbackState === "playing"}
-                        className="rounded-full border border-cyan-300/40 bg-cyan-300/10 px-4 py-1.5 text-xs font-black uppercase tracking-[0.15em] text-cyan-100 transition hover:bg-cyan-300/25 disabled:opacity-40 disabled:cursor-not-allowed">
+                        className="rounded-full border border-cyan-300/40 bg-cyan-300/10 px-3 py-1.5 text-xs font-black uppercase tracking-[0.15em] text-cyan-100 transition hover:bg-cyan-300/25 disabled:opacity-40 disabled:cursor-not-allowed">
                         {playbackState === "playing" ? "Playing..." : playbackState === "complete" ? "Replay" : "Play"}
                     </button>
                     <button type="button" onClick={handlePause} disabled={playbackState !== "playing"}
-                        className="rounded-full border border-white/10 px-4 py-1.5 text-xs font-black uppercase tracking-[0.15em] text-zinc-300 transition hover:border-cyan-300/40 hover:text-cyan-100 disabled:opacity-40 disabled:cursor-not-allowed">
+                        className="rounded-full border border-white/10 px-3 py-1.5 text-xs font-black uppercase tracking-[0.15em] text-zinc-300 transition hover:border-cyan-300/40 hover:text-cyan-100 disabled:opacity-40 disabled:cursor-not-allowed">
                         Pause
-                    </button>
-                    <button type="button" onClick={handleReset}
-                        className="rounded-full border border-white/10 px-4 py-1.5 text-xs font-black uppercase tracking-[0.15em] text-zinc-300 transition hover:border-cyan-300/40 hover:text-cyan-100">
-                        Reset
                     </button>
                 </div>
             </div>
@@ -338,7 +334,7 @@ function WreckagePlayback({ checkIns }: { checkIns: CheckIn[] }) {
                 {/* Canvas */}
                 <div className="relative flex items-center justify-center p-6">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,211,238,0.04),transparent_70%)]" />
-                    <canvas ref={canvasRef} width={480} height={480} className="w-full max-w-[360px] rounded-2xl" style={{ imageRendering: "crisp-edges" }} />
+                    <canvas ref={canvasRef} width={480} height={480} className="w-full max-w-[280px] sm:max-w-[360px] rounded-2xl" style={{ imageRendering: "crisp-edges" }} />
                 </div>
 
                 {/* Side panel */}
@@ -1059,6 +1055,11 @@ const TOUR_STEPS = [
         selector: "[data-tour='replay']",
         title: "Replay Your Story",
         description: "Watch your entire spiral play back week by week. See the pattern. See the proof.",
+    },
+    {
+        selector: "[data-tour='battles']",
+        title: "Spiral Battles",
+        description: "Challenge someone to chase the same goal. Both of you log weekly effort. One person wins. Find it in the nav.",
     },
 ];
 
@@ -1877,6 +1878,12 @@ type SpiralShareSnapshot = {
                 return;
             }
 
+            const alreadyLogged = checkIns.some((c) => c.week_number === currentWeek);
+            if (alreadyLogged) {
+                setCheckInError("You already logged this week. Come back next week.");
+                return;
+            }
+
             setSavingCheckIn(true);
             setCheckInError("");
             try {
@@ -2007,6 +2014,12 @@ type SpiralShareSnapshot = {
                                 <HelpCircle className="h-3 w-3" />
                                 Tour
                             </button>
+                            <a data-tour="battles" href="/battles" className="rounded-full border border-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 transition hover:border-fuchsia-300/40 hover:text-fuchsia-200">
+                                Battles
+                            </a>
+                            <button onClick={(e) => { navigator.clipboard.writeText(session.user.id); const btn = e.currentTarget; btn.textContent = "Copied ✓"; setTimeout(() => { btn.textContent = "Copy My ID"; }, 2000); }} className="rounded-full border border-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 transition hover:border-white/25 hover:text-zinc-200">
+                                Copy My ID
+                            </button>
                             <a href="/settings" className="rounded-full border border-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 transition hover:border-white/25 hover:text-zinc-200">
                                 Settings
                             </a>
@@ -2069,11 +2082,11 @@ type SpiralShareSnapshot = {
                             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(34,211,238,0.08),transparent_50%),radial-gradient(circle_at_70%_50%,rgba(168,85,247,0.08),transparent_50%)]" />
                             <div className="relative grid gap-0 lg:grid-cols-[1fr_auto]">
                                 {/* Left: score */}
-                                <div className="p-8 sm:p-10">
+                                <div className="p-6 sm:p-10">
                                     <p className="text-[10px] font-black uppercase tracking-[0.55em] text-fuchsia-300">Spiral Energy</p>
                                     <div className="mt-4 flex items-end gap-4">
-                                        <span className="text-8xl font-black leading-none tracking-[-0.08em] text-white sm:text-9xl">{spiralEnergyScore}</span>
-                                        <span className="mb-3 text-3xl font-black text-zinc-600">/100</span>
+                                        <span className="text-6xl sm:text-8xl lg:text-9xl font-black leading-none tracking-[-0.08em] text-white">{spiralEnergyScore}</span>
+                                        <span className="mb-3 text-2xl sm:text-3xl font-black text-zinc-600">/100</span>
                                     </div>
                                     <p className="mt-2 text-2xl font-black uppercase tracking-[-0.04em]" style={{
                                         color: spiralEnergyScore >= 80 ? "#22d3ee" : spiralEnergyScore >= 55 ? "#a855f7" : spiralEnergyScore >= 25 ? "#f472b6" : "#ef4444"
@@ -2084,8 +2097,8 @@ type SpiralShareSnapshot = {
                                 </div>
 
                                 {/* Right: animated arc */}
-                                <div className="flex items-center justify-center p-8">
-                                    <div className="relative h-48 w-48">
+                                <div className="flex items-center justify-center p-4 sm:p-8">
+                                    <div className="relative h-36 w-36 sm:h-48 sm:w-48">
                                         <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
                                             {/* Track rings */}
                                             {[44, 38, 32].map((r, i) => (
@@ -2285,9 +2298,10 @@ type SpiralShareSnapshot = {
                                             {currentWeeklyAction?.milestone_text || "Do one loud, measurable thing. Planning doesn't count."}
                                         </h2>
                                         <button data-tour="check-in-button"
-                                            onClick={() => { setPepTalk(""); setCheckInError(""); setModalOpen(true); }}
-                                            className="mt-6 w-full rounded-2xl bg-gradient-to-r from-cyan-400 via-blue-500 to-fuchsia-500 px-6 py-4 text-sm font-black uppercase tracking-wide text-white shadow-[0_0_30px_rgba(34,211,238,0.25)] transition hover:scale-[1.01] hover:shadow-[0_0_50px_rgba(34,211,238,0.35)]">
-                                            Log this week →
+                                            onClick={() => { if (checkIns.some((c) => c.week_number === currentWeek)) return; setPepTalk(""); setCheckInError(""); setModalOpen(true); }}
+                                            disabled={checkIns.some((c) => c.week_number === currentWeek)}
+                                            className="mt-6 w-full rounded-2xl bg-gradient-to-r from-cyan-400 via-blue-500 to-fuchsia-500 px-6 py-4 text-sm font-black uppercase tracking-wide text-white shadow-[0_0_30px_rgba(34,211,238,0.25)] transition hover:scale-[1.01] hover:shadow-[0_0_50px_rgba(34,211,238,0.35)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100">
+                                            {checkIns.some((c) => c.week_number === currentWeek) ? "Week logged ✓" : "Log this week →"}
                                         </button>
                                     </div>
                                 </div>
@@ -2415,7 +2429,7 @@ type SpiralShareSnapshot = {
                                         {weeksElapsed < 26 && !loggedWeeks.has(currentWeek) && (
                                             <div className="flex flex-col items-center">
                                                 <button
-                                                    onClick={() => { setPepTalk(""); setCheckInError(""); setModalOpen(true); }}
+                                                    onClick={() => { if (checkIns.some((c) => c.week_number === currentWeek)) return; setPepTalk(""); setCheckInError(""); setModalOpen(true); }}
                                                     className="flex h-11 w-11 items-center justify-center rounded-2xl border border-dashed border-cyan-300/40 bg-cyan-300/[0.06] text-cyan-400 transition hover:border-cyan-300/70 hover:bg-cyan-300/10 text-lg">
                                                     +
                                                 </button>
@@ -2702,7 +2716,7 @@ type SpiralShareSnapshot = {
 {/* Coach button */}
                 {!COACH_DISABLED && (
                     <button
-                        onClick={() => setCoachOpen(true)}
+                        onClick={() => { setCoachOpen(true); document.body.style.overflow = "hidden"; }}
                         className="fixed bottom-24 right-5 z-40 flex items-center gap-2 rounded-full bg-gradient-to-r from-cyan-400 to-fuchsia-500 px-5 py-3 text-xs font-black uppercase tracking-wide text-[#03020a] shadow-[0_0_30px_rgba(34,211,238,0.4)] transition hover:scale-105 sm:bottom-8">
                         <MessageCircle className="h-4 w-4" />
                         Coach
@@ -2711,14 +2725,14 @@ type SpiralShareSnapshot = {
 
                 {/* Coach panel */}
                 {coachOpen && !COACH_DISABLED && (
-                    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-md sm:items-center">
+                    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-md sm:items-center" onWheel={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()}>
                         <div className="flex h-[85vh] w-full max-w-xl flex-col overflow-hidden rounded-t-[2.5rem] border border-white/10 bg-[#08051a] shadow-[0_0_100px_rgba(34,211,238,0.15)] sm:rounded-[2.5rem]">
                             <div className="flex items-center justify-between border-b border-white/[0.06] px-6 py-5">
                                 <div>
                                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-cyan-300">Spiral Coach</p>
                                     <h2 className="mt-1 text-xl font-black uppercase tracking-[-0.04em]">What's the block?</h2>
                                 </div>
-                                <button onClick={() => setCoachOpen(false)}
+                                <button onClick={() => { setCoachOpen(false); document.body.style.overflow = ""; }}
                                     className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-zinc-400 transition hover:border-white/30 hover:text-white">
                                     ✕
                                 </button>

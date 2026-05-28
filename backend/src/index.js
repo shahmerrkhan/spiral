@@ -4,6 +4,7 @@ import cors from "cors";
 import crypto from "crypto";
 import { neon } from "@neondatabase/serverless";
 import coachRouter from "./routes/coach.js";
+import battlesRouter from "./routes/battles.js";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -908,8 +909,10 @@ app.post("/api/goals/breakdown", (req, res) => {
   res.json(generateBreakdown(goalText.trim(), category));
 });
 
+
 // Register AI coach endpoints before the server starts.
 app.use(coachRouter);
+app.use(battlesRouter);
 
 app.listen(PORT, () => {
   console.log(`Spiral API running on port ${PORT}`);

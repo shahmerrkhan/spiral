@@ -39,7 +39,10 @@ export function MobileBottomNav() {
         <div className="mx-auto rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-center text-[0.65rem] font-black uppercase tracking-[0.28em] text-cyan-100 shadow-lg shadow-cyan-950/30 sm:mx-0">
           SPIRAL EMBER 1
         </div>
-        <div className="flex flex-wrap items-center justify-center gap-2 text-[0.62rem] font-black uppercase tracking-[0.16em] text-zinc-300 sm:gap-3 sm:text-[0.7rem]">
+            <div className="grid grid-cols-3 items-center justify-center gap-2 text-[0.62rem] font-black uppercase tracking-[0.16em] text-zinc-300 sm:flex sm:flex-wrap sm:gap-3 sm:text-[0.7rem]">
+          <Link href="/dashboard" className="rounded-full border border-white/10 px-3 py-2 transition hover:border-cyan-300/40 hover:text-cyan-100 active:scale-95">
+            DASHBOARD
+          </Link>
           <button type="button" onClick={shareSpiral} className="rounded-full border border-white/10 px-3 py-2 transition hover:border-cyan-300/40 hover:text-cyan-100 active:scale-95">
             SHARE
           </button>
@@ -49,6 +52,9 @@ export function MobileBottomNav() {
           <button type="button" onClick={replay} className="rounded-full border border-white/10 px-3 py-2 transition hover:border-cyan-300/40 hover:text-cyan-100 active:scale-95">
             REPLAY
           </button>
+          <Link href="/battles" className="rounded-full border border-white/10 px-3 py-2 transition hover:border-fuchsia-300/40 hover:text-fuchsia-100 active:scale-95">
+            BATTLES
+          </Link>
           <Link href="/settings" className="rounded-full border border-white/10 px-3 py-2 transition hover:border-cyan-300/40 hover:text-cyan-100 active:scale-95">
             SETTINGS
           </Link>

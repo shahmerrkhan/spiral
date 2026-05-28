@@ -102,7 +102,7 @@ function OnboardingInner({ session }: { session: SpiralSession }) {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#03020a] px-4 py-10 text-white sm:px-10">
+    <main className="relative min-h-screen overflow-hidden bg-[#03020a] px-4 py-10 pb-32 text-white sm:px-10">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.12),transparent_40%),radial-gradient(circle_at_80%_80%,rgba(168,85,247,0.12),transparent_40%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:60px_60px]" />

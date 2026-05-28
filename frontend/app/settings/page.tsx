@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { getActiveGoal, updateGoal, SpiralSession } from "@/lib/supabase";
 import { ProtectedRoute } from "@/components/protected-route";
 
@@ -39,12 +39,8 @@ function SettingsInner({ session }: { session: SpiralSession }) {
       return 25;
     }
   });
-  const [friendEmail, setFriendEmail] = useState("");
-  const [inviteStatus, setInviteStatus] = useState("");
-  const [inviteError, setInviteError] = useState("");
-  const [sendingInvite, setSendingInvite] = useState(false);
 
-  const referralStorageKey = useMemo(() => `spiral-referrals:${session.user.id}`, [session.user.id]);
+
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem("spiral-theme");
@@ -83,40 +79,6 @@ function SettingsInner({ session }: { session: SpiralSession }) {
     window.dispatchEvent(new Event("spiral-soundtrack-change"));
   }, [soundtrackMode, soundtrackVolume]);
 
-  const sendInvite = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setInviteError("");
-    setInviteStatus("");
-
-    const email = friendEmail.trim().toLowerCase();
-    if (!/^\S+@\S+\.\S+$/.test(email)) {
-      setInviteError("Enter a real email so the chaos has somewhere to go.");
-      return;
-    }
-
-    setSendingInvite(true);
-    window.setTimeout(() => {
-      const referrals = JSON.parse(window.localStorage.getItem(referralStorageKey) || "[]") as Array<{ email: string; sentAt: string; goal: string }>;
-      const alreadyInvited = referrals.some((item) => item.email === email);
-      const goal = goalText.trim() || "their goal";
-
-      if (!alreadyInvited) {
-        referrals.push({ email, sentAt: new Date().toISOString(), goal });
-        window.localStorage.setItem(referralStorageKey, JSON.stringify(referrals));
-      }
-
-      window.localStorage.setItem(`spiral-invite-email:${email}`, JSON.stringify({
-        subject: "Your friend invited you to Spiral",
-        body: `Your friend is spiraling toward ${goal} and wants you to witness the chaos.`,
-        referralUserId: session.user.id,
-        joinUrl: `${window.location.origin}/?ref=${encodeURIComponent(session.user.id)}`,
-      }));
-      window.dispatchEvent(new CustomEvent("spiral-referrals-change"));
-      setInviteStatus(alreadyInvited ? "Already invited — referral kept on the board." : "Invite sent. The witness has been summoned.");
-      setFriendEmail("");
-      setSendingInvite(false);
-    }, 650);
-  };
 
   useEffect(() => {
     getActiveGoal(session)
@@ -154,8 +116,8 @@ function SettingsInner({ session }: { session: SpiralSession }) {
   }
 
 return (
-    <main className="relative min-h-screen overflow-hidden bg-[#03020a] px-4 py-10 text-white sm:px-10">
-      <div className="pointer-events-none absolute inset-0">
+<main className="relative min-h-screen overflow-hidden bg-[#03020a] px-4 py-10 pb-32 text-white sm:px-10">
+    <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(34,211,238,0.08),transparent_40%),radial-gradient(circle_at_75%_75%,rgba(168,85,247,0.08),transparent_40%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
       </div>
@@ -242,24 +204,6 @@ return (
                 </button>
               ))}
             </div>
-          </section>
-
-          {/* Invite */}
-          <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 sm:p-8">
-            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-lime-300">Invite a friend</p>
-            <h2 className="mt-2 text-xl font-black uppercase tracking-[-0.03em]">Pull someone into the spiral.</h2>
-            <p className="mt-3 text-sm font-semibold text-zinc-400">They will get: "Your friend is spiraling toward {goalText || "their goal"} and wants you to witness the chaos."</p>
-            <form onSubmit={sendInvite} className="mt-5 flex flex-col gap-3 sm:flex-row">
-              <input type="email" value={friendEmail} onChange={(e) => setFriendEmail(e.target.value)}
-                placeholder="friend@example.com"
-                className="flex-1 rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm font-bold text-white outline-none transition focus:border-lime-300/50" />
-              <button type="submit" disabled={sendingInvite}
-                className="rounded-2xl bg-gradient-to-r from-lime-300 to-cyan-300 px-6 py-3 text-sm font-black uppercase text-[#03020a] transition hover:scale-[1.01] disabled:opacity-50">
-                {sendingInvite ? "Sending..." : "Send invite"}
-              </button>
-            </form>
-            {inviteError && <div className="mt-4 rounded-2xl border border-red-400/30 bg-red-500/10 p-3 text-sm font-bold text-red-100">{inviteError}</div>}
-            {inviteStatus && <div className="mt-4 rounded-2xl border border-lime-300/30 bg-lime-300/10 p-3 text-sm font-bold text-lime-100">{inviteStatus}</div>}
           </section>
         </div>
       </div>

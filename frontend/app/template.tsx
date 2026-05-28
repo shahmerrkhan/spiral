@@ -2,14 +2,19 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 
 export default function Template({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const [visible, setVisible] = useState(true);
-
+    const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    const safety = window.setTimeout(() => setVisible(false), 3000);
+    return () => window.clearTimeout(safety);
+  }, []);
+  
   useEffect(() => {
     setVisible(true);
-    const t = window.setTimeout(() => setVisible(false), 700);
+    const t = window.setTimeout(() => setVisible(false), 1200);
     return () => window.clearTimeout(t);
   }, [pathname]);
 
@@ -32,7 +37,8 @@ export default function Template({ children }: { children: ReactNode }) {
           </div>
         </div>
       )}
-      {children}
+    {children}
+        {["/battles", "/settings", "/stats", "/archive", "/replay"].includes(pathname) && <MobileBottomNav />}
     </div>
   );
 }

@@ -223,7 +223,8 @@ export default function Home() {
       </div>
 
       {/* NAVIGATION CONTAINER */}
-      <header className="relative z-50 max-w-7xl mx-auto px-4 sm:px-6 h-20 sm:h-24 flex items-center justify-end border-b border-white/[0.04] backdrop-blur-md">
+      <header className="relative z-50 max-w-7xl mx-auto px-4 sm:px-6 h-20 sm:h-24 flex items-center justify-between border-b border-white/[0.04] backdrop-blur-md">
+        <p className="text-[10px] font-black uppercase tracking-[0.55em] text-cyan-300">Spiral</p>
         <div className="flex items-center space-x-4 sm:space-x-6">
           <Link href="/login" className="text-xs sm:text-sm font-semibold text-slate-400 hover:text-white transition-all duration-200">
             Sign In
@@ -396,6 +397,58 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+
+        {/* BATTLES SECTION */}
+      <section className="relative border-y border-white/[0.04] bg-black/[0.15] px-4 sm:px-10 lg:px-16 py-16 sm:py-24">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid gap-10 lg:grid-cols-2 lg:gap-20 items-center">
+            <div>
+              <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.35em] text-fuchsia-400">New</p>
+              <h2 className="mt-3 text-3xl sm:text-5xl font-black uppercase leading-tight tracking-tight">Spiral Battles.</h2>
+              <p className="mt-4 text-sm sm:text-base font-medium leading-relaxed text-zinc-400">Challenge someone to chase the same goal. Both of you log weekly. One person wins. The leaderboard updates in real time.</p>
+              <ul className="mt-6 space-y-3">
+                {["Pick a goal. Invite your opponent.", "Log effort every week. One shot per week.", "Watch the gap open up in real time."].map((item) => (
+                  <li key={item} className="flex items-start gap-3 text-sm font-semibold text-zinc-300">
+                    <span className="mt-0.5 h-5 w-5 shrink-0 rounded-full bg-fuchsia-500/20 border border-fuchsia-400/30 flex items-center justify-center text-fuchsia-300 text-[10px]">✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/signup" className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 px-7 py-3.5 text-sm font-black uppercase text-[#03020a] shadow-lg transition hover:scale-[1.02]">
+                Start a Battle →
+              </Link>
+            </div>
+            <div className="rounded-3xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8 space-y-4">
+              <p className="text-[9px] font-mono font-bold uppercase tracking-[0.3em] text-fuchsia-300">Live battle</p>
+              <h3 className="text-xl font-black uppercase">Write a novel openly</h3>
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div className="rounded-2xl border border-cyan-300/20 bg-cyan-300/[0.06] p-5">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-cyan-300">You</p>
+                  <p className="text-4xl font-black mt-2">47</p>
+                  <p className="text-xs text-zinc-400 mt-1">effort pts</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Opponent</p>
+                  <p className="text-4xl font-black mt-2">39</p>
+                  <p className="text-xs text-zinc-400 mt-1">effort pts</p>
+                </div>
+              </div>
+              <div className="pt-2">
+                <div className="flex justify-between text-[9px] font-mono font-bold uppercase tracking-wider text-zinc-500 mb-2">
+                  <span>Week 6 of 26</span>
+                  <span>You're ahead by 8 pts</span>
+                </div>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/[0.05]">
+                  <div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-fuchsia-400" style={{ width: "55%" }} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
 
       {/* THREE-COLUMN ARCHITECTURE GRID */}
       <section className="relative border-y border-white/[0.04] bg-black/[0.15] px-4 sm:px-10 lg:px-16 py-16 sm:py-24 backdrop-blur-sm">
