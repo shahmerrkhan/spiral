@@ -1595,7 +1595,7 @@ type SpiralShareSnapshot = {
             if (!shareSnapshot || typeof window === "undefined") return "";
             const productionOrigin = "https://spiralchaosbgrj.prettiflow.com";
             const origin = window.location.origin.includes("e2b.app") ? productionOrigin : window.location.origin;
-            return `${origin}/spiral/${shareSnapshot.id}`;
+            return `${origin}/share/${shareSnapshot.id}`;
         }, [shareSnapshot]);
 
         const openShareCard = useCallback(async () => {
@@ -1624,7 +1624,23 @@ type SpiralShareSnapshot = {
             window.localStorage.setItem(`spiral-share:${snapshot.id}`, JSON.stringify(snapshot));
             window.localStorage.setItem("spiral-latest-share-id", snapshot.id);
             setShareSnapshot(snapshot);
+            try {
+              await fetch(`${API_BASE_URL}/api/shares`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  id: snapshot.id,
+                  goal: snapshot.goal,
+                  summary: snapshot.summary,
+                  score: snapshot.score,
+                  streak: snapshot.streak,
+                  weeks_active: snapshot.weeksActive,
+                  timeline: snapshot.timeline,
+                }),
+              });
+            } catch { }
             setShareOpen(true);
+            document.body.style.overflow = "hidden";
 
             try {
                 await fetchWithTimeout(`${API_BASE_URL}/api/share`, {
@@ -1990,63 +2006,34 @@ type SpiralShareSnapshot = {
             <main className="min-h-screen w-full overflow-x-hidden bg-[#03020a] px-4 pb-28 pt-6 text-white sm:px-10 sm:py-10">
                 <div className="mx-auto max-w-5xl">
 
-                    <header className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex items-center gap-3">
-                            <a href="/" className="text-[10px] font-black uppercase tracking-[0.55em] text-cyan-300 hover:text-cyan-100 transition">Spiral</a>
-                            <div className="h-4 w-px bg-white/10" />
-                            <div className="flex items-center gap-1.5 rounded-full border border-orange-400/25 bg-orange-400/10 px-3 py-1.5">
-                                <span className="text-sm">🔥</span>
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-300">{streakFlameLevel} · {currentStreak} week{currentStreak === 1 ? "" : "s"}</span>
-                            </div>
+                    <div className="mb-6 flex items-center gap-2 flex-wrap">
+                        <button type="button" onClick={openShareCard}
+                            className="flex items-center gap-1.5 rounded-xl border border-fuchsia-300/20 bg-fuchsia-300/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-fuchsia-200 transition hover:bg-fuchsia-300/20 active:scale-95">
+                            <Share2 className="h-3 w-3" />
+                            Share
+                        </button>
+                        <button type="button" onClick={replayOnboardingTour}
+                            className="flex items-center gap-1.5 rounded-xl border border-white/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 transition hover:border-white/25 hover:text-zinc-300">
+                            <HelpCircle className="h-3 w-3" />
+                            Tour
+                        </button>
+                        <button onClick={(e) => { navigator.clipboard.writeText(session.user.id); const btn = e.currentTarget; btn.textContent = "Copied ✓"; setTimeout(() => { btn.textContent = "Copy My ID"; }, 2000); }}
+                            className="rounded-xl border border-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 transition hover:border-white/25 hover:text-zinc-200">
+                            Copy My ID
+                        </button>
+                        <div className="flex items-center gap-1.5 rounded-xl border border-orange-400/25 bg-orange-400/10 px-3 py-1.5">
+                            <span className="text-sm">🔥</span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-300">{streakFlameLevel} · {currentStreak} week{currentStreak === 1 ? "" : "s"}</span>
                         </div>
-
-                        <div className="flex flex-wrap items-center gap-2">
-                            <button type="button" onClick={openShareCard}
-                                className="flex items-center gap-1.5 rounded-full border border-fuchsia-300/20 bg-fuchsia-300/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-fuchsia-200 transition hover:bg-fuchsia-300/20 hover:border-fuchsia-300/40 active:scale-95">
-                                <Share2 className="h-3 w-3" />
-                                Share
-                            </button>
-                            <a data-tour="replay" href="/replay" className="rounded-full border border-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 transition hover:border-cyan-300/40 hover:text-cyan-200">
-                                Replay
-                            </a>
-                            <button type="button" onClick={replayOnboardingTour}
-                                className="flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 transition hover:border-white/25 hover:text-zinc-300">
-                                <HelpCircle className="h-3 w-3" />
-                                Tour
-                            </button>
-                            <a data-tour="battles" href="/battles" className="rounded-full border border-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 transition hover:border-fuchsia-300/40 hover:text-fuchsia-200">
-                                Battles
-                            </a>
-                            <button onClick={(e) => { navigator.clipboard.writeText(session.user.id); const btn = e.currentTarget; btn.textContent = "Copied ✓"; setTimeout(() => { btn.textContent = "Copy My ID"; }, 2000); }} className="rounded-full border border-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 transition hover:border-white/25 hover:text-zinc-200">
-                                Copy My ID
-                            </button>
-                            <a href="/settings" className="rounded-full border border-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 transition hover:border-white/25 hover:text-zinc-200">
-                                Settings
-                            </a>
-                            <button onClick={logout} className="rounded-full border border-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 transition hover:border-red-400/30 hover:text-red-300">
-                                Log out
-                            </button>
-                        </div>
-                    </header>
-
+                    </div>
                     {loading && !goal && <DashboardSkeleton />}
                     {!loading && goal && checkIns.length === 0 && <WeekOneOnboardingChecklist />}
                     {!loading && goal && <WallIntervention goal={goal} checkIns={checkIns} />}
                     {!loading && goal && (
                         <>
-                            <SpiralManifesto goal={goal} checkIns={checkIns} />
-                            <WreckagePlayback checkIns={checkIns} />
+                            <SpiralDna goal={goal} checkIns={checkIns} />
                         </>
                     )}
-                    {!loading && goal && (
-                        <WeeklyReflectionCard
-                            reflection={weeklyReflection}
-                            loading={weeklyReflectionLoading}
-                            currentWeek={currentWeek}
-                            onRefresh={() => setReflectionRefreshKey((key) => key + 1)}
-                        />
-                    )}
-                    {!loading && goal && <SpiralDna goal={goal} checkIns={checkIns} />}
                     {showWelcomeBanner && !loading && (
                         <section className="relative mb-10 overflow-hidden rounded-[2rem] border border-cyan-300/30 bg-gradient-to-br from-cyan-300/15 via-fuchsia-400/10 to-white/[0.04] p-5 shadow-2xl shadow-cyan-950/30 sm:p-7">
                             <button
@@ -2076,12 +2063,11 @@ type SpiralShareSnapshot = {
                             </button>
                         </section>
                     )}
-
+                    
                     {!loading && (
                         <section data-tour="spiral-energy" className="relative mb-8 overflow-hidden rounded-[2.5rem] border border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl shadow-black/40">
                             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(34,211,238,0.08),transparent_50%),radial-gradient(circle_at_70%_50%,rgba(168,85,247,0.08),transparent_50%)]" />
                             <div className="relative grid gap-0 lg:grid-cols-[1fr_auto]">
-                                {/* Left: score */}
                                 <div className="p-6 sm:p-10">
                                     <p className="text-[10px] font-black uppercase tracking-[0.55em] text-fuchsia-300">Spiral Energy</p>
                                     <div className="mt-4 flex items-end gap-4">
@@ -2095,20 +2081,11 @@ type SpiralShareSnapshot = {
                                         Calculated from consistency, effort scores, and how recently you showed up. Log a week and watch it move.
                                     </p>
                                 </div>
-
-                                {/* Right: animated arc */}
                                 <div className="flex items-center justify-center p-4 sm:p-8">
                                     <div className="relative h-36 w-36 sm:h-48 sm:w-48">
                                         <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
-                                            {/* Track rings */}
-                                            {[44, 38, 32].map((r, i) => (
-                                                <circle key={r} cx="60" cy="60" r={r}
-                                                    fill="none" stroke="rgba(255,255,255,0.05)"
-                                                    strokeWidth={i === 0 ? 8 : i === 1 ? 5 : 3} />
-                                            ))}
-                                            {/* Energy arc */}
-                                            <circle cx="60" cy="60" r="44"
-                                                fill="none"
+                                            <circle cx="60" cy="60" r="44" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="8" />
+                                            <circle cx="60" cy="60" r="44" fill="none"
                                                 stroke={spiralEnergyScore >= 80 ? "#22d3ee" : spiralEnergyScore >= 55 ? "#a855f7" : spiralEnergyScore >= 25 ? "#f472b6" : "#ef4444"}
                                                 strokeWidth="8"
                                                 strokeLinecap="round"
@@ -2116,43 +2093,11 @@ type SpiralShareSnapshot = {
                                                 className="transition-all duration-1000 ease-out"
                                                 style={{ filter: `drop-shadow(0 0 8px ${spiralEnergyScore >= 80 ? "#22d3ee" : spiralEnergyScore >= 55 ? "#a855f7" : "#f472b6"})` }}
                                             />
-                                            {/* Consistency ring */}
-                                            <circle cx="60" cy="60" r="38"
-                                                fill="none" stroke="#facc15" strokeWidth="5" strokeLinecap="round"
-                                                strokeDasharray={`${(weeksActive / Math.max(1, currentWeek)) * 238.8} 238.8`}
-                                                className="transition-all duration-1000 ease-out delay-200"
-                                                style={{ filter: "drop-shadow(0 0 6px #facc15)" }}
-                                            />
-                                            {/* Streak ring */}
-                                            <circle cx="60" cy="60" r="32"
-                                                fill="none" stroke="#f472b6" strokeWidth="3" strokeLinecap="round"
-                                                strokeDasharray={`${Math.min(1, streak / 12) * 201.1} 201.1`}
-                                                className="transition-all duration-1000 ease-out delay-300"
-                                                style={{ filter: "drop-shadow(0 0 5px #f472b6)" }}
-                                            />
                                         </svg>
-                                        {/* Center label */}
-                                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                                             <p className="text-2xl font-black text-white">{spiralEnergyScore}</p>
-                                            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500">Energy</p>
+                                            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-600">/100</p>
                                         </div>
-                                    </div>
-
-                                    {/* Legend */}
-                                    <div className="ml-6 flex flex-col gap-3">
-                                        {[
-                                            { color: "#22d3ee", label: "Energy", value: `${spiralEnergyScore}%` },
-                                            { color: "#facc15", label: "Consistency", value: `${Math.round((weeksActive / Math.max(1, currentWeek)) * 100)}%` },
-                                            { color: "#f472b6", label: "Streak", value: `${streak}w` },
-                                        ].map(({ color, label, value }) => (
-                                            <div key={label} className="flex items-center gap-2">
-                                                <div className="h-2 w-2 rounded-full" style={{ backgroundColor: color, boxShadow: `0 0 6px ${color}` }} />
-                                                <div>
-                                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">{label}</p>
-                                                    <p className="text-sm font-black text-white">{value}</p>
-                                                </div>
-                                            </div>
-                                        ))}
                                     </div>
                                 </div>
                             </div>
@@ -2439,6 +2384,20 @@ type SpiralShareSnapshot = {
                                     </div>
                                 </div>
                             </section>
+
+                            {!loading && goal && (
+                                <WeeklyReflectionCard
+                                    reflection={weeklyReflection}
+                                    loading={weeklyReflectionLoading}
+                                    currentWeek={currentWeek}
+                                    onRefresh={() => setReflectionRefreshKey((key) => key + 1)}
+                                />
+                            )}
+
+                            <WreckagePlayback checkIns={checkIns} />
+
+                            <SpiralManifesto goal={goal} checkIns={checkIns} />
+
                         </div>
                     )}
                 </div>
@@ -2610,14 +2569,14 @@ type SpiralShareSnapshot = {
                 )}
 
                 {shareOpen && shareSnapshot && (
-                    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-md sm:items-center">
+                    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-md sm:items-center" onWheel={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()}>
                         <div className="w-full max-w-lg overflow-hidden rounded-t-[2.5rem] border border-white/10 bg-[#08051a] shadow-[0_0_100px_rgba(168,85,247,0.15)] sm:rounded-[2.5rem]">
                             <div className="flex items-center justify-between border-b border-white/[0.06] px-6 py-5">
                                 <div>
                                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-fuchsia-300">Share your spiral</p>
                                     <h2 className="mt-1 text-xl font-black uppercase tracking-[-0.04em]">Show the mess.</h2>
                                 </div>
-                                <button onClick={() => setShareOpen(false)}
+                                    <button onClick={() => { setShareOpen(false); document.body.style.overflow = ""; }}
                                     className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-zinc-400 transition hover:border-white/30 hover:text-white">
                                     ✕
                                 </button>

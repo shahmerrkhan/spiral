@@ -128,10 +128,10 @@ return (
             <p className="text-[10px] font-black uppercase tracking-[0.55em] text-cyan-300">Spiral</p>
             <h1 className="mt-2 text-3xl font-black uppercase leading-none tracking-[-0.05em]">Settings</h1>
           </div>
-          <button onClick={() => window.history.back()}
-            className="rounded-full border border-white/10 px-4 py-2 text-xs font-black uppercase text-zinc-400 transition hover:border-cyan-300/50 hover:text-cyan-100">
-            ← Back
-          </button>
+          <a href="/dashboard"
+            className="rounded-xl border border-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 transition hover:border-white/20 hover:text-white">
+            ← Dashboard
+          </a>
         </header>
 
         <div className="space-y-5">
@@ -204,6 +204,23 @@ return (
                 </button>
               ))}
             </div>
+          </section>
+        {/* User ID */}
+          <section className="rounded-[2rem] border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8">
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500">Your account</p>
+            <h2 className="mt-2 text-xl font-black uppercase tracking-[-0.03em]">User ID.</h2>
+            <p className="mt-2 text-sm font-medium text-zinc-500">Share this with someone to start a Spiral Battle.</p>
+            <button
+              onClick={(e) => {
+                navigator.clipboard.writeText(session.user.id);
+                const btn = e.currentTarget;
+                btn.textContent = "Copied ✓";
+                setTimeout(() => { btn.textContent = "Copy My ID"; }, 2000);
+              }}
+              className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] px-5 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 transition hover:border-white/20 hover:text-white"
+            >
+              Copy My ID
+            </button>
           </section>
         </div>
       </div>

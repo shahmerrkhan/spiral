@@ -1,10 +1,9 @@
 "use client";
 
-import { CheckIn, getActiveGoal, getCheckIns, getStoredSession, Goal } from "@/lib/supabase";
+import { CheckIn, getActiveGoal, getCheckIns, Goal, SpiralSession } from "@/lib/supabase";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { BarChart3, LineChart, Trophy, Type, Zap } from "lucide-react";
-import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { ProtectedRoute } from "@/components/protected-route";
 
 type MonthStats = {
@@ -68,7 +67,7 @@ function calculateBestStreak(checkIns: CheckIn[]) {
   return best;
 }
 
-function StatsContent() {
+function StatsContent({ session }: { session: SpiralSession }) {
   const [goal, setGoal] = useState<Goal | null>(null);
   const [checkIns, setCheckIns] = useState<CheckIn[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,8 +76,6 @@ function StatsContent() {
     let mounted = true;
     async function loadStats() {
       try {
-        const session = getStoredSession();
-        if (!session) return;
         const activeGoal = await getActiveGoal(session);
         const logs = activeGoal ? await getCheckIns(session, activeGoal.id) : [];
         if (!mounted) return;
@@ -93,10 +90,8 @@ function StatsContent() {
       }
     }
     void loadStats();
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    return () => { mounted = false; };
+  }, [session]);
 
   const stats = useMemo(() => {
     const sorted = [...checkIns].sort((a, b) => getCheckInDate(a).getTime() - getCheckInDate(b).getTime());
@@ -131,17 +126,7 @@ function StatsContent() {
     const months = [...monthMap.values()].slice(-6);
     const strongestMonth = months.reduce<MonthStats | null>((best, month) => (!best || month.effort > best.effort ? month : best), null);
 
-    return {
-      sorted,
-      efforts,
-      totalEffort,
-      averageEffort,
-      totalWords,
-      bestStreak: calculateBestStreak(sorted),
-      weekly,
-      months,
-      strongestMonth,
-    };
+    return { sorted, efforts, totalEffort, averageEffort, totalWords, bestStreak: calculateBestStreak(sorted), weekly, months, strongestMonth };
   }, [checkIns]);
 
   const maxEffort = Math.max(10, ...stats.efforts);
@@ -154,63 +139,67 @@ function StatsContent() {
   const maxMonthEffort = Math.max(1, ...stats.months.map((month) => month.effort));
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#05030b] px-4 pb-32 pt-6 text-white sm:px-6 lg:px-10">
+    <main className="min-h-screen overflow-x-hidden bg-[#03020a] px-4 pb-32 pt-6 text-white sm:px-6 lg:px-10">
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col gap-5 border-b border-white/10 pb-8 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.45em] text-fuchsia-300">Spiral statistics</p>
-            <h1 className="mt-3 max-w-4xl text-4xl font-black uppercase leading-none tracking-[-0.06em] sm:text-6xl">The receipts, not the fantasy.</h1>
+            <p className="text-[10px] font-black uppercase tracking-[0.45em] text-fuchsia-300">Spiral statistics</p>
+            <h1 className="mt-3 max-w-4xl text-4xl font-black uppercase leading-none tracking-[-0.06em] sm:text-6xl">The receipts,<br />not the fantasy.</h1>
             <p className="mt-4 max-w-2xl text-sm font-semibold leading-6 text-zinc-400">{getGoalText(goal)}</p>
           </div>
-          <Link href="/dashboard" className="rounded-2xl border border-white/10 px-5 py-3 text-xs font-black uppercase tracking-[0.2em] text-zinc-300 transition hover:border-fuchsia-300/50 hover:text-white">
-            Back to dashboard
+          <Link href="/dashboard" className="w-fit rounded-2xl border border-white/10 px-5 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 transition hover:border-white/20 hover:text-white">
+            ← Dashboard
           </Link>
         </div>
 
         {loading ? (
-          <div className="mt-8 grid gap-5 md:grid-cols-3">
-            {[0, 1, 2, 3, 4, 5].map((item) => <div key={item} className="h-44 animate-pulse rounded-[2rem] border border-white/10 bg-white/[0.04]" />)}
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+            {[...Array(5)].map((_, i) => <div key={i} className="h-32 animate-pulse rounded-[2rem] border border-white/[0.06] bg-white/[0.02]" />)}
           </div>
         ) : (
           <>
             <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-              <div className="rounded-[2rem] border border-fuchsia-300/20 bg-fuchsia-300/10 p-5">
-                <Trophy className="h-5 w-5 text-fuchsia-200" />
-                <p className="mt-5 text-4xl font-black">{stats.bestStreak}</p>
-                <p className="text-xs font-black uppercase tracking-[0.25em] text-fuchsia-100/70">Best streak ever</p>
-              </div>
-              <div className="rounded-[2rem] border border-cyan-300/20 bg-cyan-300/10 p-5">
-                <Type className="h-5 w-5 text-cyan-200" />
-                <p className="mt-5 text-4xl font-black">{stats.totalWords}</p>
-                <p className="text-xs font-black uppercase tracking-[0.25em] text-cyan-100/70">Words written</p>
-              </div>
-              <div className="rounded-[2rem] border border-lime-300/20 bg-lime-300/10 p-5">
-                <Zap className="h-5 w-5 text-lime-200" />
-                <p className="mt-5 text-4xl font-black">{stats.averageEffort.toFixed(1)}</p>
-                <p className="text-xs font-black uppercase tracking-[0.25em] text-lime-100/70">Avg effort score</p>
-              </div>
-              <div className="rounded-[2rem] border border-orange-300/20 bg-orange-300/10 p-5">
-                <BarChart3 className="h-5 w-5 text-orange-200" />
-                <p className="mt-5 text-4xl font-black">{stats.totalEffort}</p>
-                <p className="text-xs font-black uppercase tracking-[0.25em] text-orange-100/70">Total effort</p>
-              </div>
-              <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-5">
-                <LineChart className="h-5 w-5 text-zinc-200" />
-                <p className="mt-5 text-4xl font-black">{stats.strongestMonth?.label || "—"}</p>
-                <p className="text-xs font-black uppercase tracking-[0.25em] text-zinc-400">Strongest month</p>
-              </div>
+              {[
+                { icon: <Trophy className="h-4 w-4" />, value: stats.bestStreak, label: "Best streak", color: "fuchsia" },
+                { icon: <Type className="h-4 w-4" />, value: stats.totalWords, label: "Words written", color: "cyan" },
+                { icon: <Zap className="h-4 w-4" />, value: stats.averageEffort.toFixed(1), label: "Avg effort", color: "lime" },
+                { icon: <BarChart3 className="h-4 w-4" />, value: stats.totalEffort, label: "Total effort", color: "orange" },
+                { icon: <LineChart className="h-4 w-4" />, value: stats.strongestMonth?.label || "—", label: "Best month", color: "zinc" },
+              ].map(({ icon, value, label, color }) => (
+                <div key={label} className={`rounded-[2rem] border p-5 ${
+                  color === "fuchsia" ? "border-fuchsia-300/20 bg-fuchsia-300/[0.07]" :
+                  color === "cyan" ? "border-cyan-300/20 bg-cyan-300/[0.07]" :
+                  color === "lime" ? "border-lime-300/20 bg-lime-300/[0.07]" :
+                  color === "orange" ? "border-orange-300/20 bg-orange-300/[0.07]" :
+                  "border-white/[0.06] bg-white/[0.02]"
+                }`}>
+                  <div className={
+                    color === "fuchsia" ? "text-fuchsia-300" :
+                    color === "cyan" ? "text-cyan-300" :
+                    color === "lime" ? "text-lime-300" :
+                    color === "orange" ? "text-orange-300" : "text-zinc-400"
+                  }>{icon}</div>
+                  <p className="mt-4 text-3xl font-black">{value}</p>
+                  <p className={`mt-1 text-[9px] font-black uppercase tracking-[0.3em] ${
+                    color === "fuchsia" ? "text-fuchsia-300/60" :
+                    color === "cyan" ? "text-cyan-300/60" :
+                    color === "lime" ? "text-lime-300/60" :
+                    color === "orange" ? "text-orange-300/60" : "text-zinc-600"
+                  }`}>{label}</p>
+                </div>
+              ))}
             </section>
 
             <section className="mt-6 grid gap-6 xl:grid-cols-[1.35fr_1fr]">
-              <article className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 sm:p-7">
+              <article className="rounded-[2rem] border border-white/[0.06] bg-white/[0.02] p-5 sm:p-7">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs font-black uppercase tracking-[0.35em] text-fuchsia-300">Effort over time</p>
-                    <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.04em]">The line does not lie</h2>
+                    <p className="text-[10px] font-black uppercase tracking-[0.35em] text-fuchsia-300">Effort over time</p>
+                    <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.04em]">The line does not lie.</h2>
                   </div>
-                  <p className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-zinc-300">{stats.sorted.length} logs</p>
+                  <span className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-1 text-[10px] font-black text-zinc-500">{stats.sorted.length} logs</span>
                 </div>
-                <div className="mt-8 h-72 rounded-[1.5rem] border border-white/10 bg-black/30 p-4">
+                <div className="mt-6 h-64 rounded-[1.5rem] border border-white/[0.06] bg-black/30 p-4">
                   {stats.sorted.length ? (
                     <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full overflow-visible">
                       <defs>
@@ -220,72 +209,73 @@ function StatsContent() {
                           <stop offset="100%" stopColor="#f97316" />
                         </linearGradient>
                       </defs>
-                      {[20, 40, 60, 80].map((line) => <line key={line} x1="0" x2="100" y1={line} y2={line} stroke="rgba(255,255,255,0.08)" strokeWidth="0.4" />)}
-                      <polyline fill="none" stroke="url(#effortLine)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.7" points={chartPoints} />
-                      {stats.sorted.map((checkIn, index) => {
-                        const x = stats.sorted.length <= 1 ? 50 : (index / (stats.sorted.length - 1)) * 100;
+                      {[20, 40, 60, 80].map((y) => <line key={y} x1="0" x2="100" y1={y} y2={y} stroke="rgba(255,255,255,0.06)" strokeWidth="0.4" />)}
+                      <polyline fill="none" stroke="url(#effortLine)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" points={chartPoints} />
+                      {stats.sorted.map((checkIn, i) => {
+                        const x = stats.sorted.length <= 1 ? 50 : (i / (stats.sorted.length - 1)) * 100;
                         const y = 100 - (getCheckInEffort(checkIn) / maxEffort) * 82 - 8;
-                        return <circle key={index} cx={x} cy={y} r="1.8" fill="#fdf4ff" />;
+                        return <circle key={i} cx={x} cy={y} r="1.6" fill="#fdf4ff" />;
                       })}
                     </svg>
-                  ) : <div className="flex h-full items-center justify-center text-sm font-semibold text-zinc-500">No effort data yet. Log a week and the graph wakes up.</div>}
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-sm font-semibold text-zinc-600">Log a week and the graph wakes up.</div>
+                  )}
                 </div>
               </article>
 
-              <article className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 sm:p-7">
-                <p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-300">Weekly consistency</p>
-                <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.04em]">Show-up bars</h2>
-                <div className="mt-8 flex h-72 items-end gap-3 rounded-[1.5rem] border border-white/10 bg-black/30 p-4">
+              <article className="rounded-[2rem] border border-white/[0.06] bg-white/[0.02] p-5 sm:p-7">
+                <p className="text-[10px] font-black uppercase tracking-[0.35em] text-cyan-300">Weekly consistency</p>
+                <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.04em]">Show-up bars.</h2>
+                <div className="mt-6 flex h-64 items-end gap-2 rounded-[1.5rem] border border-white/[0.06] bg-black/30 p-4">
                   {stats.weekly.length ? stats.weekly.map((week) => (
-                    <div key={week.key} className="flex min-w-0 flex-1 flex-col items-center gap-2">
-                      <div className="flex w-full items-end justify-center rounded-t-2xl bg-cyan-300/15" style={{ height: `${Math.max(10, (week.count / maxWeeklyCount) * 210)}px` }}>
-                        <div className="h-full w-full rounded-t-2xl bg-gradient-to-t from-cyan-400 to-fuchsia-300" />
-                      </div>
-                      <p className="text-[10px] font-black uppercase text-zinc-500">{week.label}</p>
+                    <div key={week.key} className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
+                      <div className="w-full rounded-t-xl bg-gradient-to-t from-cyan-400 to-fuchsia-400" style={{ height: `${Math.max(8, (week.count / maxWeeklyCount) * 200)}px` }} />
+                      <p className="text-[9px] font-black uppercase text-zinc-600">{week.label}</p>
                     </div>
-                  )) : <div className="flex w-full self-center justify-center text-sm font-semibold text-zinc-500">No weekly logs yet.</div>}
+                  )) : (
+                    <div className="flex w-full self-center justify-center text-sm font-semibold text-zinc-600">No weekly logs yet.</div>
+                  )}
                 </div>
               </article>
             </section>
 
-            <section className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 sm:p-7">
+            <section className="mt-6 rounded-[2rem] border border-white/[0.06] bg-white/[0.02] p-5 sm:p-7">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.35em] text-orange-300">Monthly comparison</p>
-                  <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.04em]">Strongest month: {stats.strongestMonth?.label || "not enough data"}</h2>
+                  <p className="text-[10px] font-black uppercase tracking-[0.35em] text-orange-300">Monthly breakdown</p>
+                  <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.04em]">Strongest month: {stats.strongestMonth?.label || "not enough data yet"}</h2>
                 </div>
-                <p className="text-sm font-semibold text-zinc-400">Measured by total effort logged.</p>
+                <p className="text-xs font-semibold text-zinc-600">Measured by total effort.</p>
               </div>
-              <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {stats.months.length ? stats.months.map((month) => (
-                  <div key={month.key} className="rounded-[1.5rem] border border-white/10 bg-black/30 p-4">
+                  <div key={month.key} className="rounded-[1.5rem] border border-white/[0.06] bg-black/30 p-4">
                     <div className="flex items-center justify-between">
                       <p className="text-lg font-black uppercase">{month.label}</p>
-                      <p className="text-xs font-black text-zinc-500">{month.count} logs</p>
+                      <p className="text-[10px] font-black text-zinc-600">{month.count} logs</p>
                     </div>
-                    <div className="mt-4 h-3 overflow-hidden rounded-full bg-white/10">
+                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/[0.06]">
                       <div className="h-full rounded-full bg-gradient-to-r from-orange-400 via-fuchsia-300 to-cyan-300" style={{ width: `${Math.max(6, (month.effort / maxMonthEffort) * 100)}%` }} />
                     </div>
-                    <div className="mt-4 flex justify-between text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">
+                    <div className="mt-3 flex justify-between text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600">
                       <span>{month.effort} effort</span>
                       <span>{month.words} words</span>
                     </div>
                   </div>
-                )) : <p className="text-sm font-semibold text-zinc-500">No monthly comparison yet. The spiral needs a few receipts.</p>}
+                )) : (
+                  <p className="text-sm font-semibold text-zinc-600">No monthly data yet. Keep logging.</p>
+                )}
               </div>
             </section>
           </>
         )}
       </div>
-      <MobileBottomNav />
     </main>
   );
 }
 
 export default function StatsPage() {
   return (
-    <ProtectedRoute>
-      <StatsContent />
-    </ProtectedRoute>
+    <ProtectedRoute>{(session) => <StatsContent session={session} />}</ProtectedRoute>
   );
 }

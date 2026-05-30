@@ -39,7 +39,20 @@ await sql`
       created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `;
-  console.log("Battle tables ready");
+    await sql`
+    CREATE TABLE IF NOT EXISTS share_snapshots (
+      id TEXT PRIMARY KEY,
+      goal TEXT NOT NULL,
+      summary TEXT,
+      score INTEGER DEFAULT 0,
+      streak TEXT,
+      weeks_active INTEGER DEFAULT 0,
+      timeline JSONB,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `;
+console.log("Battle tables ready");
+
 }
 
 initTables().catch(console.error);
@@ -158,6 +171,56 @@ router.get("/api/users/lookup", async (req, res) => {
     `;
     if (!rows[0]) return res.status(404).json({ error: "User not found" });
     res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Save a share snapshot
+router.post("/api/shares", async (req, res) => {
+  try {
+    const { id, goal, summary, score, streak, weeks_active, timeline } = req.body;
+    if (!id || !goal) return res.status(400).json({ error: "Missing required fields" });
+
+    const data = { goal, summary, score, streak, weeks_active, timeline };
+
+    await sql`
+      INSERT INTO share_snapshots (id, data)
+      VALUES (${id}, ${JSON.stringify(data)})
+      ON CONFLICT (id) DO NOTHING
+    `;
+    res.status(201).json({ id });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get a share snapshot
+router.get("/api/shares/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const rows = await sql`SELECT id, data, created_at FROM share_snapshots WHERE id = ${id}`;
+    if (!rows[0]) return res.status(404).json({ error: "Share not found" });
+    const record = rows[0];
+    res.json({ ...record.data, id: record.id, created_at: record.created_at });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get recent public spirals
+router.get("/api/spirals/public", async (req, res) => {
+  try {
+    const rows = await sql`
+      SELECT id, data, created_at
+      FROM share_snapshots
+      ORDER BY created_at DESC
+      
+      `;
+    res.json(rows.map(r => ({ ...r.data, id: r.id, created_at: r.created_at })));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });

@@ -19,11 +19,10 @@ export default function Template({ children }: { children: ReactNode }) {
   }, [pathname]);
 
   return (
-    <div key={pathname} className="min-h-screen overflow-x-hidden bg-[#03020a] pb-24 text-white animate-in fade-in slide-in-from-bottom-3 duration-500 ease-out sm:pb-0">
+    <div key={pathname} className={`min-h-screen overflow-x-hidden bg-[#03020a] text-white animate-in fade-in slide-in-from-bottom-3 duration-500 ease-out ${!["/", "/login", "/signup"].includes(pathname) ? "pt-[52px]" : ""}`}>
       {visible && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#03020a] animate-out fade-out duration-300 delay-400">
           <div className="flex flex-col items-center gap-6">
-            {/* Animated spiral rings */}
             <div className="relative h-20 w-20">
               <div className="absolute inset-0 rounded-full border border-cyan-300/20 animate-ping" />
               <div className="absolute inset-2 rounded-full border border-fuchsia-400/30 animate-spin" style={{ animationDuration: "2s" }} />
@@ -37,8 +36,8 @@ export default function Template({ children }: { children: ReactNode }) {
           </div>
         </div>
       )}
-    {children}
-        {["/battles", "/settings", "/stats", "/archive", "/replay"].includes(pathname) && <MobileBottomNav />}
+      {!["/", "/login", "/signup"].includes(pathname) && <MobileBottomNav />}
+      {children}
     </div>
   );
 }

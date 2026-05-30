@@ -26,28 +26,27 @@ type SharedGoal = {
 };
 
 function normalizeShare(data: unknown): { goalText: string; checkIns: Array<{ week: number; effort: number; log: string }> } | null {
-  const record = data as SharedGoal & { goal?: SharedGoal; snapshot?: SharedGoal; data?: SharedGoal };
-  const source = (record?.snapshot || record?.data || record?.goal || record) as SharedGoal;
-  const goalText = source?.goal_text || source?.goalText || source?.goal || source?.title;
-  const rawCheckIns = source?.check_ins || source?.checkIns || source?.weeks || [];
+  const record = data as any;
+  const goalText = record?.goal || record?.goal_text || record?.goalText || record?.title;
+  const rawTimeline = record?.timeline || record?.check_ins || record?.checkIns || record?.weeks || [];
 
   if (!goalText) return null;
 
   return {
     goalText,
-    checkIns: rawCheckIns
-      .map((item, index) => ({
-        week: Number(item.week_number || item.weekNumber || index + 1),
-        effort: Math.max(1, Math.min(10, Number(item.effort_score || item.effortScore || 1))),
-        log: item.log_text || item.logText || "Logged forward motion.",
+    checkIns: rawTimeline
+      .map((item: any, index: number) => ({
+        week: Number(item.week_number || item.weekNumber || item.week || index + 1),
+        effort: Math.max(1, Math.min(10, Number(item.effort_score || item.effortScore || item.effort || 1))),
+        log: item.log_text || item.logText || item.note || item.log || "Logged forward motion.",
       }))
-      .sort((a, b) => a.week - b.week),
+      .sort((a: any, b: any) => a.week - b.week),
   };
 }
 
 async function fetchSharedSpiral(id: string) {
   try {
-    const response = await fetchWithTimeout(`${API_BASE_URL}/api/share/${encodeURIComponent(id)}`, { cache: "no-store" });
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/shares/${encodeURIComponent(id)}`, { cache: "no-store" });
     if (!response.ok) return null;
 
     const data = await response.json();
@@ -145,8 +144,8 @@ export default function PublicSharePage({ params }: { params: Promise<{ id: stri
         <div className="mx-auto flex min-h-[70vh] max-w-3xl items-center justify-center text-center">
           <section className="rounded-[2.5rem] border border-white/10 bg-white/[0.04] p-8 shadow-2xl shadow-fuchsia-950/30 sm:p-12">
             <p className="text-xs font-black uppercase tracking-[0.4em] text-fuchsia-200">Spiral not found</p>
-            <h1 className="mt-5 text-4xl font-black uppercase tracking-[-0.06em] sm:text-6xl">This share link has gone quiet.</h1>
-            <p className="mt-5 text-lg font-semibold leading-8 text-zinc-300">Start a fresh spiral and make a link worth passing around.</p>
+            <h1 className="mt-5 text-4xl font-black uppercase tracking-[-0.06em] sm:text-6xl">This share lives in another browser.</h1>
+            <p className="mt-5 text-lg font-semibold leading-8 text-zinc-300">Prototype share links are read-only and stored locally by the creator.</p>
             <Link href="/" className="mt-8 inline-flex rounded-full bg-cyan-300 px-7 py-4 text-sm font-black uppercase tracking-[0.2em] text-[#05030b] transition hover:bg-white">
               Start your own spiral
             </Link>

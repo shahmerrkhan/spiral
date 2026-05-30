@@ -1,546 +1,528 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
-const bullets = [
-  {
-    title: "Pick the messy goal.",
-    body: "One goal. Six months. Big enough that you cannot fake caring about it.",
-  },
-  {
-    title: "Turn it into receipts.",
-    body: "Spiral breaks the goal into months, then weeks. Not motivation. Just the next bit of proof.",
-  },
-  {
-    title: "Fall off. Write it down.",
-    body: "Missed weeks still count as data. No guilt. No streak worship. Just evidence that helps you return.",
-  },
-];
-
-const initialPromptDataset = [
-  {
-    id: "instagram",
-    tabLabel: "Get 1M followers",
-    title: "Get 1M Instagram followers",
-    short: "Get 1M followers",
-    score: "62%",
-    proofTitle: "Week 1 proof",
-    proofText: "Post 5 reels this week no matter what, even bad ones. Especially bad ones.",
-    weeksLogged: "5 / blank: 3",
-    grid: [8, 6, null, 9, null, 4, 7, null]
-  },
-  {
-    id: "startup",
-    tabLabel: "Make $10k from a thing",
-    title: "Make $10k from a thing I built",
-    short: "Make $10k Build",
-    score: "45%",
-    proofTitle: "Week 4 proof",
-    proofText: "DM 40 target customers with a painfully specific problem statement. Zero aesthetic adjustments allowed.",
-    weeksLogged: "3 / blank: 5",
-    grid: [9, null, null, 7, null, 8, null, null]
-  },
-  {
-    id: "novel",
-    tabLabel: "Write a novel openly",
-    title: "Write a novel where people can see it",
-    short: "Public Novel",
-    score: "81%",
-    proofTitle: "Week 12 proof",
-    proofText: "Write 4,000 messy words across four days. Do not open chapter one to correct typos.",
-    weeksLogged: "7 / blank: 1",
-    grid: [9, 8, 7, null, 9, 8, 9, 7]
-  },
-  {
-    id: "marathon",
-    tabLabel: "Run a clean marathon",
-    title: "Run a marathon and stay normal about it",
-    short: "Normal Marathon",
-    score: "73%",
-    proofTitle: "Week 8 proof",
-    proofText: "Run 3 times this week: two short shameless local jogs and one highly uncomfortable long interval slog.",
-    weeksLogged: "6 / blank: 2",
-    grid: [6, 7, null, 8, 9, null, 7, 8]
-  }
-];
-
-const initialProof = [
-  {
-    name: "Maya Chen",
-    goal: "Publish my first novel",
-    week: "Week 19",
-    score: 87,
-    streak: "18 weeks logged",
-    line: "Rewrote the ending before school. It is still rough. But chapter 24 finally exists.",
-  },
-  {
-    name: "Priya Shah",
-    goal: "Hit $10k MRR with my startup",
-    week: "Week 23",
-    score: 91,
-    streak: "9 weeks logged",
-    line: "Sent the email I kept avoiding. Booked three calls. The deck did not matter.",
-  },
-  {
-    name: "Marcus Reed",
-    goal: "Run a sub-4 hour marathon",
-    week: "Week 14",
-    score: 78,
-    streak: "11 weeks logged",
-    line: "Tempo run sucked. Kept the pace anyway. Logged the ugly splits.",
-  },
-  {
-    name: "Ava Thompson",
-    goal: "Grow my YouTube channel to 100k subscribers",
-    week: "Week 27",
-    score: 84,
-    streak: "16 weeks logged",
-    line: "Posted the video I wanted to hide. First 500 views came from the messy version.",
-  },
-];
-
-export default function Home() {
-  const [promptDataset, setPromptDataset] = useState(initialPromptDataset);
-  const [proofList, setProofList] = useState(initialProof);
-  const [activeProfile, setActiveProfile] = useState(initialPromptDataset[0]);
-  
-  // Terminal Engine States
-  const [terminalInput, setTerminalInput] = useState("");
-  const [terminalLogs, setTerminalLogs] = useState<string[]>([
-    "SYS_INIT // Spiral Core Engine online.",
-    "Type /help to see the available dataset operations.",
-  ]);
-  const terminalEndRef = useRef<HTMLDivElement>(null);
-
-  // Sync active profile view when main dataset updates via console command injection
+// ─── Animated spiral SVG that draws itself ───────────────────────────────────
+function HeroSpiral() {
+  const ref = useRef<SVGPathElement>(null);
   useEffect(() => {
-    const fresh = promptDataset.find((p) => p.id === activeProfile.id);
-    if (fresh) setActiveProfile(fresh);
-  }, [promptDataset]);
-
-  // Keep terminal scrolled to the latest execution receipt
-  useEffect(() => {
-    terminalEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [terminalLogs]);
-
-  const executeCommand = (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanInput = terminalInput.trim();
-    if (!cleanInput) return;
-
-    const parts = cleanInput.split(" ");
-    const command = parts[0].toLowerCase();
-    const args = parts.slice(1).join(" ");
-
-    let currentLogs = [...terminalLogs, `> ${cleanInput}`];
-
-    switch (command) {
-      case "/help":
-        currentLogs.push(
-          "AVAILABLE CORE COMMANDS:",
-          "  /log <text>                - Hot-inject a new proof entry into the active view",
-          "  /score <1-99>%             - Manually adjust active system integrity rating",
-          "  /clear                     - Clear console registry cache",
-          "  /backdoor                  - Run experimental override simulation"
-        );
-        break;
-
-      case "/clear":
-        currentLogs = ["CONSOLE_CACHE_CLEARED // Ready for input."];
-        break;
-
-      case "/log":
-        if (!args) {
-          currentLogs.push("ERROR: /log requires text context. Usage: /log <proof text>");
-        } else {
-          setPromptDataset(prev => prev.map(p => {
-            if (p.id === activeProfile.id) {
-              const updatedGrid = [...p.grid];
-              const randomSlot = updatedGrid.indexOf(null);
-              if (randomSlot !== -1) {
-                updatedGrid[randomSlot] = Math.floor(Math.random() * 4) + 6;
-              }
-              return {
-                ...p,
-                proofText: args,
-                grid: updatedGrid,
-                weeksLogged: `${updatedGrid.filter(Boolean).length} / blank: ${updatedGrid.filter(n => n === null).length}`
-              };
-            }
-            return p;
-          }));
-          currentLogs.push(`SUCCESS: Injected log into [${activeProfile.short}] matrix allocation state.`);
-        }
-        break;
-
-      case "/score":
-        const scoreVal = parseInt(args.replace("%", ""), 10);
-        if (isNaN(scoreVal) || scoreVal < 1 || scoreVal > 99) {
-          currentLogs.push("ERROR: Invalid scope profile. Range must fall between 1% and 99%.");
-        } else {
-          setPromptDataset(prev => prev.map(p => 
-            p.id === activeProfile.id ? { ...p, score: `${scoreVal}%` } : p
-          ));
-          currentLogs.push(`MOD_INTEGRITY: Active system architecture rating balanced to ${scoreVal}%.`);
-        }
-        break;
-
-      case "/backdoor":
-        currentLogs.push(
-          "INITIALIZING SYSTEM SIMULATION PROTOCOL...",
-          "  [LOAD] Corrupting validation layers...",
-          "  [OVERRIDE] Forcing perfect matrix tracking variables...",
-          "  [EXEC] Absolute integrity state unlocked."
-        );
-        const fakeUser = {
-          name: "SYS_OVERRIDE",
-          goal: "Execute unauthorized core engine compilation loops",
-          week: "Week 99",
-          score: 99,
-          streak: "99 weeks logged",
-          line: "The canvas grid holds. Perfect operational execution simulation completed.",
-        };
-        setProofList(prev => [fakeUser, ...prev.slice(0, 3)]);
-        break;
-
-      default:
-        currentLogs.push(`COMMAND_NOT_FOUND: "${command}". Fire /help for the valid protocol list.`);
-        break;
-    }
-
-    setTerminalLogs(currentLogs);
-    setTerminalInput("");
-  };
+    const el = ref.current;
+    if (!el) return;
+    const len = el.getTotalLength();
+    el.style.strokeDasharray = String(len);
+    el.style.strokeDashoffset = String(len);
+    el.style.transition = "stroke-dashoffset 2.8s cubic-bezier(0.16, 1, 0.3, 1)";
+    const t = setTimeout(() => { el.style.strokeDashoffset = "0"; }, 200);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#03020a] pb-12 text-white selection:bg-cyan-500/30 font-sans [scroll-behavior:smooth] transition-colors duration-500 sm:pb-0">
-      
-      {/* BACKGROUND GRAPH INFRASTRUCTURE & ANIMATED RADIAL GLOWS */}
-      <div className="pointer-events-none fixed inset-0 z-0 opacity-90 mix-blend-screen">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:56px_56px]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(34,211,238,0.15),transparent_45%),radial-gradient(circle_at_85%_20%,rgba(217,70,239,0.12),transparent_40%),radial-gradient(circle_at_15%_80%,rgba(59,130,246,0.1),transparent_35%)] animate-[pulse_8s_ease-in-out_infinite]" />
+    <svg viewBox="0 0 400 400" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="sg" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.15" />
+          <stop offset="100%" stopColor="#a855f7" stopOpacity="0" />
+        </radialGradient>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="3" result="blur" />
+          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+      </defs>
+      <circle cx="200" cy="200" r="190" fill="url(#sg)" />
+      {/* Outer faint rings */}
+      {[170, 140, 110, 80, 50, 25].map((r, i) => (
+        <circle key={r} cx="200" cy="200" r={r}
+          stroke="rgba(34,211,238,0.06)"
+          strokeWidth="1"
+          style={{ animationDelay: `${i * 0.15}s` }}
+        />
+      ))}
+      {/* Main spiral path */}
+      <path
+        ref={ref}
+        d="M200,200 
+           C200,200 200,185 215,180 C235,173 252,183 258,200 C266,222 254,248 232,258 C204,270 172,258 158,232 C142,200 154,162 184,146 C220,127 264,141 282,178 C302,220 288,272 250,292 C206,315 152,300 130,258 C105,210 122,148 168,124 C220,97 290,116 314,168 C341,226 320,306 262,330 C198,357 118,334 92,272 C63,204 88,116 152,88 C222,58 320,85 348,156"
+        stroke="url(#spiralGrad)"
+        strokeWidth="2"
+        strokeLinecap="round"
+        filter="url(#glow)"
+      />
+      <defs>
+        <linearGradient id="spiralGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#22d3ee" />
+          <stop offset="50%" stopColor="#818cf8" />
+          <stop offset="100%" stopColor="#d946ef" />
+        </linearGradient>
+      </defs>
+      {/* Pulsing center dot */}
+      <circle cx="200" cy="200" r="4" fill="#22d3ee">
+        <animate attributeName="r" values="4;7;4" dur="2s" repeatCount="indefinite" />
+        <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite" />
+      </circle>
+    </svg>
+  );
+}
+
+// ─── Scroll reveal hook ───────────────────────────────────────────────────────
+function useReveal() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      { threshold: 0.15 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return { ref, visible };
+}
+
+// ─── Reveal wrapper ───────────────────────────────────────────────────────────
+function Reveal({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
+  const { ref, visible } = useReveal();
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0px)" : "translateY(32px)",
+        transition: `opacity 0.7s ease ${delay}ms, transform 0.7s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ─── Animated counter ─────────────────────────────────────────────────────────
+function Counter({ to, suffix = "" }: { to: number; suffix?: string }) {
+  const { ref, visible } = useReveal();
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    if (!visible) return;
+    let start = 0;
+    const step = Math.ceil(to / 40);
+    const t = setInterval(() => {
+      start += step;
+      if (start >= to) { setVal(to); clearInterval(t); }
+      else setVal(start);
+    }, 30);
+    return () => clearInterval(t);
+  }, [visible, to]);
+  return <span ref={ref}>{val}{suffix}</span>;
+}
+
+// ─── Marquee ticker ───────────────────────────────────────────────────────────
+const tickers = [
+  "One goal", "Six months", "No lying", "Real data", "Spiral Battles",
+  "AI Coach", "Public Wall", "Zero guilt", "Effort scores", "Weekly logs",
+  "Your fingerprint", "Chaos Mode", "Replay your story", "Show up anyway",
+];
+
+function Marquee() {
+  return (
+    <div className="relative overflow-hidden border-y border-white/[0.04] bg-black/20 py-4">
+      <div className="flex w-max animate-[marquee_25s_linear_infinite] gap-8">
+        {[...tickers, ...tickers].map((t, i) => (
+          <span key={i} className="flex items-center gap-8 text-[10px] font-black uppercase tracking-[0.35em] text-zinc-600">
+            {t}
+            <span className="h-1 w-1 rounded-full bg-cyan-400/40" />
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Features ─────────────────────────────────────────────────────────────────
+const features = [
+  { tag: "Core", title: "One goal. Six months.", body: "Set the most unrealistic goal you can think of. Spiral breaks it into monthly milestones and weekly actions. No fluff. Just the next move.", accent: "cyan" },
+  { tag: "Tracking", title: "Log what actually happened.", body: "Every week you write what happened and rate your effort 1–10. Missed a week? Log that too. Missed weeks are data, not failures.", accent: "fuchsia" },
+  { tag: "Intelligence", title: "AI Coach that keeps it real.", body: "Your coach sees your pattern — the good weeks, the bad ones, the ones where you barely showed up. It won't lie to you.", accent: "amber" },
+  { tag: "Visualization", title: "Your effort fingerprint.", body: "Spiral DNA is a live SVG generated from your actual logged weeks. No two spirals look the same. Watch it change as you show up.", accent: "cyan" },
+  { tag: "Multiplayer", title: "Spiral Battles.", body: "Challenge someone to chase the same goal. One log per week each. Real-time leaderboard. Six months. One winner.", accent: "fuchsia" },
+  { tag: "Social", title: "Public Spiral Wall.", body: "Share your spiral. Anyone can see it. Real goals, real chaos, real people showing up anyway. Every shared spiral is a public receipt.", accent: "amber" },
+  { tag: "Replay", title: "Watch your story play back.", body: "Replay mode animates your entire spiral week by week. See the pattern. See the proof. See how far you actually came.", accent: "cyan" },
+  { tag: "Identity", title: "Chaos Mode.", body: "Sometimes dark mode isn't enough. Chaos Mode is heavy, neon, and slightly unhinged. Test it on a PC for the full effect.", accent: "fuchsia" },
+];
+
+const proofCards = [
+  { goal: "Publish my first novel", week: "Week 19", effort: 8, line: "Rewrote the ending before school. Chapter 24 finally exists." },
+  { goal: "Hit $10k MRR", week: "Week 23", effort: 9, line: "Sent the email I kept avoiding. Booked three calls." },
+  { goal: "Run a sub-4 hour marathon", week: "Week 14", effort: 7, line: "Tempo run sucked. Kept the pace anyway." },
+  { goal: "Grow to 100k YouTube subscribers", week: "Week 27", effort: 8, line: "Posted the video I wanted to hide. 500 views from the messy version." },
+];
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+export default function Home() {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [heroVisible, setHeroVisible] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setHeroVisible(true), 100);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    const move = (e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY });
+    window.addEventListener("mousemove", move);
+    return () => window.removeEventListener("mousemove", move);
+  }, []);
+
+  return (
+    <main className="min-h-screen overflow-x-hidden bg-[#03020a] text-white selection:bg-cyan-500/30">
+
+      {/* Cursor glow */}
+      <div
+        className="pointer-events-none fixed z-0 h-96 w-96 rounded-full opacity-20 blur-[80px] transition-all duration-500 ease-out"
+        style={{
+          background: "radial-gradient(circle, rgba(34,211,238,0.4) 0%, transparent 70%)",
+          left: mousePos.x - 192,
+          top: mousePos.y - 192,
+        }}
+      />
+
+      {/* Static background */}
+      <div className="pointer-events-none fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.012)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.012)_1px,transparent_1px)] bg-[size:72px_72px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(34,211,238,0.1),transparent)]" />
+        <div className="absolute right-0 top-0 h-[600px] w-[600px] rounded-full bg-fuchsia-600/5 blur-[120px]" />
+        <div className="absolute bottom-0 left-0 h-[400px] w-[400px] rounded-full bg-cyan-600/5 blur-[100px]" />
       </div>
 
-      {/* NAVIGATION CONTAINER */}
-      <header className="relative z-50 max-w-7xl mx-auto px-4 sm:px-6 h-20 sm:h-24 flex items-center justify-between border-b border-white/[0.04] backdrop-blur-md">
-        <p className="text-[10px] font-black uppercase tracking-[0.55em] text-cyan-300">Spiral</p>
-        <div className="flex items-center space-x-4 sm:space-x-6">
-          <Link href="/login" className="text-xs sm:text-sm font-semibold text-slate-400 hover:text-white transition-all duration-200">
-            Sign In
-          </Link>
-          <Link href="/signup" className="relative text-xs sm:text-sm font-black bg-white text-slate-950 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl shadow-xl shadow-white/5 whitespace-nowrap">
+      {/* ── NAV ── */}
+      <header
+        className="relative z-50 mx-auto flex h-20 max-w-7xl items-center justify-between border-b border-white/[0.04] px-4 sm:px-8"
+        style={{
+          opacity: heroVisible ? 1 : 0,
+          transform: heroVisible ? "translateY(0)" : "translateY(-12px)",
+          transition: "opacity 0.6s ease, transform 0.6s ease",
+        }}
+      >
+        <p className="text-[10px] font-black uppercase tracking-[0.6em] text-cyan-300">Spiral</p>
+        <div className="flex items-center gap-3 sm:gap-5">
+          <Link href="/spirals" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 transition-colors hover:text-white">Wall</Link>
+          <Link href="/login" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 transition-colors hover:text-white">Sign In</Link>
+          <Link href="/signup" className="rounded-xl border border-white/10 bg-white/[0.05] px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em] text-white transition-all hover:border-cyan-400/40 hover:bg-cyan-400/10 hover:text-cyan-300">
             Get Started
           </Link>
         </div>
       </header>
 
-      {/* HERO SECTION INTERACTIVE SIMULATOR */}
-      <section className="relative z-10 isolate flex min-h-[calc(100vh-5rem)] items-center px-4 py-6 sm:px-10 lg:px-16">
-        <div className="mx-auto grid w-full max-w-7xl items-center gap-10 lg:gap-16 grid-cols-1 lg:grid-cols-[1.1fr_0.9fr]">
-          
-          {/* LEFT COMMAND MODULE */}
-          <div className="space-y-6 sm:space-y-10">
-            <div className="inline-flex items-center gap-2.5 rounded-full border border-blue-400/20 bg-blue-500/5 px-3.5 py-1.5 text-[10px] sm:text-xs font-black uppercase tracking-[0.18em] sm:tracking-[0.24em] text-blue-300 shadow-[0_0_30px_rgba(59,130,246,0.12)] backdrop-blur-md w-fit">
-              <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(103,232,249,1)]" />
-              Goal tracking for messy people
-            </div>
+      {/* ── HERO ── */}
+      <section className="relative z-10 mx-auto grid min-h-[calc(100vh-5rem)] max-w-7xl grid-cols-1 items-center gap-12 px-4 py-16 sm:px-8 lg:grid-cols-2">
 
-            <div className="space-y-4 sm:space-y-6">
-              <h1 className="max-w-6xl text-4xl sm:text-6xl md:text-7xl lg:text-[5.8rem] xl:text-[6.8rem] font-black uppercase leading-[0.9] sm:leading-[0.82] tracking-[-0.04em] sm:tracking-[-0.06em] text-white">
-                <span className="block drop-shadow-[0_0_40px_rgba(255,255,255,0.12)]">Track the goal</span>
-                <span className="block bg-gradient-to-r from-cyan-400 via-blue-400 to-fuchsia-400 bg-clip-text text-transparent filter contrast-[110%] pb-1">
-                  without lying.
-                </span>
-              </h1>
-              <p className="max-w-xl text-sm sm:text-base md:text-xl font-medium leading-relaxed text-zinc-400">
-                Spiral is goal tracking that expects chaos. Pick the thing. Log what happened. Use the evidence. No guilt. <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-400 font-black tracking-wide underline decoration-fuchsia-500/30 underline-offset-4">No streak cult.</span>
-              </p>
+        {/* Left */}
+        <div>
+          <div
+            style={{
+              opacity: heroVisible ? 1 : 0,
+              transform: heroVisible ? "translateY(0)" : "translateY(24px)",
+              transition: "opacity 0.7s ease 0.1s, transform 0.7s cubic-bezier(0.16,1,0.3,1) 0.1s",
+            }}
+          >
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/5 px-4 py-2">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-400" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-300">Goal tracking for messy people</span>
             </div>
+          </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row max-w-md w-full">
+          <div
+            style={{
+              opacity: heroVisible ? 1 : 0,
+              transform: heroVisible ? "translateY(0)" : "translateY(32px)",
+              transition: "opacity 0.8s ease 0.2s, transform 0.8s cubic-bezier(0.16,1,0.3,1) 0.2s",
+            }}
+          >
+            <h1 className="text-[clamp(3rem,8vw,6rem)] font-black uppercase leading-[0.85] tracking-[-0.04em]">
+              <span className="block text-white">Track the</span>
+              <span className="block text-white">goal without</span>
+              <span className="block bg-gradient-to-r from-cyan-400 via-blue-300 to-fuchsia-400 bg-clip-text text-transparent">
+                lying.
+              </span>
+            </h1>
+          </div>
+
+          <div
+            style={{
+              opacity: heroVisible ? 1 : 0,
+              transform: heroVisible ? "translateY(0)" : "translateY(24px)",
+              transition: "opacity 0.7s ease 0.4s, transform 0.7s cubic-bezier(0.16,1,0.3,1) 0.4s",
+            }}
+          >
+            <p className="mt-7 max-w-lg text-base font-medium leading-relaxed text-zinc-400">
+              Set one ridiculous 6-month goal. Log what actually happens every week — the good, the bad, the weeks you barely showed up. No streaks. No guilt. Just evidence.
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/signup"
-                className="group min-h-12 sm:min-h-14 flex items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 via-cyan-500 to-purple-600 px-6 sm:px-8 py-3 sm:py-4 text-center text-sm sm:text-base font-black uppercase tracking-wide text-[#03020a] shadow-[0_0_40px_rgba(59,130,246,0.25)] transition-all duration-300 ease-out hover:scale-[1.02]"
+                className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-7 py-3.5 text-sm font-black uppercase tracking-wide text-white shadow-[0_0_30px_rgba(34,211,238,0.25)] transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_50px_rgba(34,211,238,0.4)]"
               >
-                <span>Start tracking</span>
+                <span className="relative z-10">Start tracking →</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
               </Link>
               <Link
                 href="/login"
-                className="min-h-12 sm:min-h-14 flex items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] px-6 sm:px-8 py-3 sm:py-4 text-center text-sm sm:text-base font-black uppercase tracking-wide text-white backdrop-blur-md hover:bg-cyan-400/[0.08]"
+                className="rounded-2xl border border-white/10 bg-white/[0.03] px-7 py-3.5 text-sm font-black uppercase tracking-wide text-zinc-400 transition-all duration-200 hover:border-white/20 hover:text-white"
               >
                 I already fell off
               </Link>
             </div>
 
-            <div className="grid gap-3 pt-2 grid-cols-1 md:grid-cols-3">
-              {bullets.map((item, index) => (
-                <article
-                  key={item.title}
-                  className="group relative rounded-2xl border border-white/[0.05] bg-white/[0.02] p-4 sm:p-5 shadow-2xl backdrop-blur-sm transition-all duration-300 hover:border-white/[0.12]"
-                >
-                  <div className="mb-3 flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/10 text-[10px] font-mono font-black text-cyan-300 border border-cyan-500/20">
-                    0{index + 1}
-                  </div>
-                  <h2 className="text-xs sm:text-sm font-black uppercase tracking-tight text-white group-hover:text-cyan-300">{item.title}</h2>
-                  <p className="mt-1.5 text-xs font-semibold leading-relaxed text-zinc-400">{item.body}</p>
-                </article>
+            {/* Stats row */}
+            <div
+              className="mt-12 flex items-center gap-6 border-t border-white/[0.04] pt-8"
+              style={{
+                opacity: heroVisible ? 1 : 0,
+                transition: "opacity 0.7s ease 0.6s",
+              }}
+            >
+              {[
+                { n: 100, suffix: "%", label: "Free forever" },
+                { n: 26, suffix: "", label: "Weeks tracked" },
+                { n: 0, suffix: "", label: "Guilt trips" },
+              ].map(({ n, suffix, label }) => (
+                <div key={label}>
+                  <p className="text-2xl font-black text-white">
+                    <Counter to={n} suffix={suffix} />
+                  </p>
+                  <p className="mt-0.5 text-[9px] font-black uppercase tracking-[0.25em] text-zinc-600">{label}</p>
+                </div>
               ))}
             </div>
           </div>
+        </div>
 
-          {/* RIGHT BLOCK: HIGH-FIDELITY LIVE INTERACTIVE CONSOLE */}
-          <div className="relative mx-auto w-full max-w-md lg:ml-auto group/card mt-4 lg:mt-0">
-            <div className="absolute -inset-2 sm:-inset-4 rounded-[2.5rem] bg-gradient-to-br from-blue-500/20 via-purple-500/10 to-cyan-400/15 blur-2xl opacity-80 pointer-events-none" />
-            
-            <div className="relative overflow-hidden rounded-3xl border border-white/[0.07] bg-[#0c091b]/95 p-4 sm:p-7 shadow-2xl backdrop-blur-xl">
-              
-              {/* Dynamic Header Module */}
-              <div className="mb-4 sm:mb-6 flex items-start justify-between gap-2 border-b border-white/[0.06] pb-4 sm:pb-5">
-                <div className="space-y-1 min-w-0">
-                  <p className="text-[8px] sm:text-[9px] font-mono font-bold uppercase tracking-[0.25em] sm:tracking-[0.35em] text-cyan-400 filter drop-shadow-[0_0_8px_rgba(34,211,238,0.3)] truncate">Goal on the table</p>
-                  <h3 className="text-lg sm:text-xl font-black uppercase tracking-tight text-white truncate">
-                    {activeProfile.short}
-                  </h3>
-                </div>
-                <div className="rounded-xl border border-purple-500/20 bg-purple-500/5 px-2.5 sm:px-3.5 py-1.5 sm:py-2.5 text-right shrink-0">
-                  <p className="text-[8px] sm:text-[9px] font-mono font-bold uppercase tracking-wider text-purple-400/70">Spiral score</p>
-                  <p className="text-xl sm:text-2xl font-black text-purple-200 mt-0.5 tracking-tight animate-pulse">{activeProfile.score}</p>
-                </div>
-              </div>
-
-              {/* Dynamic Output Monitor Panel */}
-              <div className="relative rounded-2xl border border-cyan-400/15 bg-cyan-400/[0.02] p-4 sm:p-5 shadow-inner overflow-hidden">
-                <span className="inline-block text-[8px] sm:text-[9px] font-mono font-bold uppercase tracking-[0.25em] text-cyan-300 bg-cyan-950/50 px-2 py-0.5 rounded border border-cyan-800/40">
-                  {activeProfile.proofTitle}
-                </span>
-                <p className="mt-2.5 sm:mt-3.5 text-xs sm:text-sm font-semibold leading-relaxed text-slate-200 min-h-[2.5rem] sm:min-h-[3rem] transition-all duration-300">
-                  &ldquo;{activeProfile.proofText}&rdquo;
-                </p>
-              </div>
-
-              {/* Matrix Frame Grid Registry Component */}
-              <div className="mt-4 sm:mt-6 space-y-2.5">
-                <div className="flex items-center justify-between text-[9px] sm:text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
-                  <span>YOUR SPIRAL REGISTRY</span>
-                  <span className="text-zinc-400 font-semibold">{activeProfile.weeksLogged}</span>
-                </div>
-                <div className="grid grid-cols-8 gap-1.5 sm:grid-cols-8 sm:gap-2.5">
-                  {activeProfile.grid.map((score, index) => (
-                    <div
-                      key={index}
-                      className={`flex aspect-square items-center justify-center rounded-lg sm:rounded-xl border text-[10px] sm:text-xs font-mono font-black transition-all duration-300 ${
-                        score
-                          ? "border-cyan-400/40 bg-gradient-to-br from-cyan-400/10 to-blue-500/10 text-cyan-300 shadow-[0_0_15px_rgba(34,211,238,0.12)]"
-                          : "border-white/[0.04] bg-white/[0.01] text-zinc-800"
-                      }`}
-                    >
-                      {score ?? ""}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* INTERACTIVE COMMAND CORE LINE LAYER */}
-              <div className="mt-4 sm:mt-6 rounded-2xl border border-emerald-500/20 bg-black/60 p-3.5 font-mono text-[10px] sm:text-[11px] space-y-2.5 shadow-inner">
-                <div className="flex items-center justify-between text-[8px] sm:text-[9px] font-bold text-emerald-400 uppercase tracking-widest border-b border-white/[0.04] pb-2">
-                  <span>SYSTEM COMMAND INTERFACE</span>
-                  <span className="animate-pulse">● ONLINE</span>
-                </div>
-                
-                {/* Scrollable Mini-Terminal Logs */}
-                <div className="space-y-1 text-zinc-400 max-h-20 sm:max-h-24 overflow-y-auto scrolling-touch selection:bg-emerald-500/20 selection:text-emerald-300 pr-1">
-                  {terminalLogs.map((log, idx) => (
-                    <div key={idx} className={`whitespace-pre-wrap ${log.startsWith(">") ? "text-cyan-300" : log.startsWith("SUCCESS") ? "text-emerald-400" : log.startsWith("ERROR") ? "text-rose-400" : ""}`}>
-                      {log}
-                    </div>
-                  ))}
-                  <div ref={terminalEndRef} />
-                </div>
-
-                {/* Live Executable Prompt Line Input */}
-                <form onSubmit={executeCommand} className="flex items-center gap-1.5 border-t border-white/[0.04] pt-2 mt-1">
-                  <span className="text-emerald-400 font-bold shrink-0 animate-pulse">&gt;_</span>
-                  <input
-                    type="text"
-                    value={terminalInput}
-                    onChange={(e) => setTerminalInput(e.target.value)}
-                    placeholder="Type /help to manipulate variables..."
-                    className="w-full bg-transparent text-zinc-200 focus:outline-none placeholder-zinc-600 font-mono text-[10px] sm:text-[11px] border-none p-0 focus:ring-0"
-                  />
-                </form>
-              </div>
-
-              {/* Hot-Swap Tabs Engine Controller */}
-              <div className="mt-3.5 rounded-2xl border border-white/[0.05] bg-white/[0.01] p-2.5 space-y-2">
-                <div className="grid grid-cols-2 gap-1.5">
-                  {promptDataset.map((prompt) => {
-                    const isSelected = activeProfile.id === prompt.id;
-                    return (
-                      <button 
-                        key={prompt.id}
-                        onClick={() => setActiveProfile(prompt)}
-                        className={`text-left text-[9px] sm:text-[10px] px-2 py-1.5 sm:py-2 rounded-xl border font-mono transition-all duration-200 truncate ${
-                          isSelected
-                            ? "bg-white/[0.06] border-white/15 text-cyan-300 font-bold shadow-md"
-                            : "bg-transparent border-transparent text-zinc-500 hover:text-zinc-300"
-                        }`}
-                      >
-                        {isSelected ? "● " : "○ "} {prompt.tabLabel}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
+        {/* Right — animated spiral */}
+        <div
+          className="relative flex items-center justify-center"
+          style={{
+            opacity: heroVisible ? 1 : 0,
+            transform: heroVisible ? "scale(1) rotate(0deg)" : "scale(0.85) rotate(-10deg)",
+            transition: "opacity 1.2s ease 0.3s, transform 1.2s cubic-bezier(0.16,1,0.3,1) 0.3s",
+          }}
+        >
+          <div className="relative h-[380px] w-[380px] sm:h-[480px] sm:w-[480px]">
+            {/* Outer glow ring */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-500/10 to-fuchsia-500/10 blur-2xl" />
+            <HeroSpiral />
+            {/* Floating label */}
+            <div className="absolute bottom-8 right-0 rounded-2xl border border-white/10 bg-[#03020a]/80 px-4 py-3 backdrop-blur-md">
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-cyan-300">Week 14</p>
+              <p className="mt-1 text-lg font-black">8/10</p>
+              <p className="text-[9px] text-zinc-500">Kept the pace anyway.</p>
             </div>
           </div>
         </div>
       </section>
 
+      {/* ── MARQUEE ── */}
+      <style>{`
+        @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        @keyframes float { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+      `}</style>
+      <Marquee />
 
-        {/* BATTLES SECTION */}
-      <section className="relative border-y border-white/[0.04] bg-black/[0.15] px-4 sm:px-10 lg:px-16 py-16 sm:py-24">
+      {/* ── HOW IT WORKS ── */}
+      <section className="relative z-10 px-4 py-24 sm:px-8 sm:py-32">
         <div className="mx-auto max-w-6xl">
-          <div className="grid gap-10 lg:grid-cols-2 lg:gap-20 items-center">
-            <div>
-              <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.35em] text-fuchsia-400">New</p>
-              <h2 className="mt-3 text-3xl sm:text-5xl font-black uppercase leading-tight tracking-tight">Spiral Battles.</h2>
-              <p className="mt-4 text-sm sm:text-base font-medium leading-relaxed text-zinc-400">Challenge someone to chase the same goal. Both of you log weekly. One person wins. The leaderboard updates in real time.</p>
-              <ul className="mt-6 space-y-3">
-                {["Pick a goal. Invite your opponent.", "Log effort every week. One shot per week.", "Watch the gap open up in real time."].map((item) => (
-                  <li key={item} className="flex items-start gap-3 text-sm font-semibold text-zinc-300">
-                    <span className="mt-0.5 h-5 w-5 shrink-0 rounded-full bg-fuchsia-500/20 border border-fuchsia-400/30 flex items-center justify-center text-fuchsia-300 text-[10px]">✓</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/signup" className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 px-7 py-3.5 text-sm font-black uppercase text-[#03020a] shadow-lg transition hover:scale-[1.02]">
-                Start a Battle →
-              </Link>
-            </div>
-            <div className="rounded-3xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8 space-y-4">
-              <p className="text-[9px] font-mono font-bold uppercase tracking-[0.3em] text-fuchsia-300">Live battle</p>
-              <h3 className="text-xl font-black uppercase">Write a novel openly</h3>
-              <div className="grid grid-cols-2 gap-4 mt-4">
-                <div className="rounded-2xl border border-cyan-300/20 bg-cyan-300/[0.06] p-5">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-cyan-300">You</p>
-                  <p className="text-4xl font-black mt-2">47</p>
-                  <p className="text-xs text-zinc-400 mt-1">effort pts</p>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Opponent</p>
-                  <p className="text-4xl font-black mt-2">39</p>
-                  <p className="text-xs text-zinc-400 mt-1">effort pts</p>
-                </div>
-              </div>
-              <div className="pt-2">
-                <div className="flex justify-between text-[9px] font-mono font-bold uppercase tracking-wider text-zinc-500 mb-2">
-                  <span>Week 6 of 26</span>
-                  <span>You're ahead by 8 pts</span>
-                </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/[0.05]">
-                  <div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-fuchsia-400" style={{ width: "55%" }} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+          <Reveal>
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-cyan-400">How it works</p>
+            <h2 className="mt-3 text-3xl font-black uppercase leading-[0.9] tracking-tight sm:text-6xl">Three steps.<br />No excuses.</h2>
+          </Reveal>
 
-
-
-      {/* THREE-COLUMN ARCHITECTURE GRID */}
-      <section className="relative border-y border-white/[0.04] bg-black/[0.15] px-4 sm:px-10 lg:px-16 py-16 sm:py-24 backdrop-blur-sm">
-        <div className="mx-auto mb-10 sm:mb-16 max-w-6xl">
-          <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] sm:tracking-[0.45em] text-cyan-400">Execution framework</p>
-          <h2 className="mt-2.5 sm:mt-4 max-w-4xl text-3xl sm:text-5xl md:text-6xl font-black uppercase leading-tight tracking-tight text-white">Start simple. Keep it honest.</h2>
-        </div>
-        <div className="mx-auto grid max-w-6xl gap-4 sm:gap-6 grid-cols-1 md:grid-cols-3">
-          {[
-            ["01", "Name the thing", "One goal. Not ten. Write the thing you keep thinking about, even if it sounds too big for a single frame."],
-            ["02", "Make proof for this week", "Pick one specific action you can actually build or finish. Small is useful. Hyped architecture maps are not."],
-            ["03", "Come back either way", "Executed it? Log the receipt. Missed it? Log that layout too. Spiral works perfectly when you stop hiding the raw data."],
-          ].map(([number, title, body]) => (
-            <div key={title} className="group rounded-3xl border border-white/[0.05] bg-white/[0.02] p-6 sm:p-8 shadow-xl transition-all duration-300 hover:translate-y-[-4px] hover:border-cyan-400/40">
-              <p className="text-4xl sm:text-5xl font-black tracking-tighter text-cyan-400/60 transition-colors duration-300 group-hover:text-fuchsia-400">{number}</p>
-              <h3 className="mt-4 sm:mt-6 text-xl sm:text-2xl font-black uppercase leading-none tracking-tight text-white group-hover:text-cyan-300">{title}</h3>
-              <p className="mt-3 text-xs sm:text-sm font-medium leading-relaxed text-zinc-400">{body}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* HIGHER FREQUENCY LOG STREAM */}
-      <section className="px-4 sm:px-10 lg:px-16 py-16 sm:py-24">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-10 sm:mb-16 flex flex-col justify-between gap-4 md:flex-row md:items-end">
-            <div>
-              <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] sm:tracking-[0.42em] text-fuchsia-400">Verified pipeline activity</p>
-              <h2 className="mt-2.5 sm:mt-4 max-w-3xl text-3xl sm:text-5xl md:text-6xl font-black uppercase leading-none tracking-tight">Proof beats vibes.</h2>
-            </div>
-            <Link href="/signup" className="group rounded-xl bg-white px-5 py-3 text-xs sm:text-sm font-black uppercase text-[#03020a] shadow-lg transition-all duration-300 hover:scale-[1.04] hover:bg-cyan-200 w-fit">
-              Start Your Log
-            </Link>
-          </div>
-          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-            {proofList.map((item) => (
-              <div key={item.name} className="group relative overflow-hidden rounded-3xl border border-white/[0.05] bg-gradient-to-br from-white/[0.03] to-white/[0.005] p-5 sm:p-6 transition-all duration-300 hover:translate-y-[-4px] hover:border-fuchsia-400/40">
-                <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-fuchsia-500/5 blur-2xl transition-all duration-500 group-hover:bg-cyan-400/15" />
-                
-                <div className="relative mb-4 sm:mb-6 flex items-start justify-between gap-3">
-                  <div className="space-y-0.5 min-w-0">
-                    <p className="text-base sm:text-lg font-black uppercase leading-tight tracking-wide text-white group-hover:text-fuchsia-300 truncate">{item.name}</p>
-                    <p className="text-[8px] sm:text-[9px] font-mono font-bold uppercase tracking-wider text-cyan-400">{item.week}</p>
-                  </div>
-                  <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-full border border-cyan-400/20 bg-cyan-400/5 text-xs font-mono font-black text-cyan-200 shadow-inner group-hover:rotate-[360deg] transition-transform duration-700 ease-out">
-                    {item.score}
-                  </div>
+          <div className="mt-16 grid gap-4 md:grid-cols-3">
+            {[
+              { num: "01", title: "Name the goal", body: "One goal. Not ten. The one that makes you cringe a little just saying it out loud.", color: "cyan" },
+              { num: "02", title: "Show up weekly", body: "Write what happened. Rate your effort. Missed a week? Log that too. The spiral pulls you back.", color: "fuchsia" },
+              { num: "03", title: "Use the evidence", body: "By month 6 you won't hit the crazy goal. But you'll have built something massive — because the obsession was the point.", color: "amber" },
+            ].map((step, i) => (
+              <Reveal key={step.num} delay={i * 100}>
+                <div className="group relative h-full overflow-hidden rounded-3xl border border-white/[0.05] bg-white/[0.02] p-8 transition-all duration-500 hover:-translate-y-2 hover:border-white/10 hover:bg-white/[0.04]">
+                  <div className={`absolute -right-6 -top-6 text-[7rem] font-black leading-none tracking-tighter transition-all duration-500 group-hover:scale-110 ${
+                    step.color === "cyan" ? "text-cyan-400/[0.06]" :
+                    step.color === "fuchsia" ? "text-fuchsia-400/[0.06]" : "text-amber-400/[0.06]"
+                  }`}>{step.num}</div>
+                  <p className={`text-4xl font-black tracking-tighter ${
+                    step.color === "cyan" ? "text-cyan-400/30 group-hover:text-cyan-400/60" :
+                    step.color === "fuchsia" ? "text-fuchsia-400/30 group-hover:text-fuchsia-400/60" :
+                    "text-amber-400/30 group-hover:text-amber-400/60"
+                  } transition-colors duration-300`}>{step.num}</p>
+                  <h3 className="mt-5 text-xl font-black uppercase tracking-tight">{step.title}</h3>
+                  <p className="mt-3 text-sm font-medium leading-relaxed text-zinc-500">{step.body}</p>
                 </div>
-
-                <p className="relative text-lg sm:text-xl font-black uppercase leading-tight tracking-tight text-white min-h-[2.5rem] sm:min-h-[3rem] line-clamp-2">{item.goal}</p>
-                
-                <div className="relative mt-3.5 sm:mt-4 rounded-xl border border-white/[0.04] bg-black/40 px-3 py-1.5 sm:py-2">
-                  <p className="text-[8px] sm:text-[9px] font-mono font-bold uppercase tracking-wider text-zinc-500">Registered frames</p>
-                  <p className="mt-0.5 text-xs font-mono font-bold uppercase tracking-wide text-cyan-300">{item.streak}</p>
-                </div>
-                
-                <p className="relative mt-3.5 sm:mt-4 rounded-xl border border-fuchsia-500/10 bg-fuchsia-500/[0.02] p-3.5 sm:p-4 text-xs font-semibold leading-relaxed text-fuchsia-200/80 italic">
-                  &ldquo;{item.line}&rdquo;
-                </p>
-
-                <div className="relative mt-4 sm:mt-5 space-y-1.5">
-                  <div className="flex justify-between text-[8px] sm:text-[9px] font-mono font-bold uppercase tracking-wider text-zinc-500">
-                    <span>Spiral integrity</span>
-                    <span>{item.score}%</span>
-                  </div>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.05]">
-                    <div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-fuchsia-400 transition-all duration-1000 ease-out" style={{ width: `${item.score}%` }} />
-                  </div>
-                </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* FINAL CONVERSION MODULE CONTAINER */}
-      <section className="border-t border-white/[0.04] px-4 sm:px-10 lg:px-16 py-20 sm:py-28 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.04),transparent_50%)] pointer-events-none" />
-        <div className="mx-auto max-w-4xl text-center space-y-6 sm:space-y-8 relative z-10">
-          <h2 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase leading-tight tracking-tight">
-            Ready to track the <span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-fuchsia-400 bg-clip-text text-transparent filter contrast-125">mess?</span>
-          </h2>
-          <p className="mx-auto max-w-lg text-sm sm:text-base md:text-lg font-medium text-zinc-400">
-            Stop pretending execution will be perfectly neat. Build out your goals. Registry stays open. Start logging what happens.
-          </p>
-          <div className="pt-2.5 sm:pt-4">
-            <Link href="/signup" className="group relative inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 via-cyan-500 to-purple-600 px-10 sm:px-12 py-4 sm:py-5 text-sm sm:text-base font-black uppercase tracking-wide text-[#03020a] shadow-[0_0_45px_rgba(59,130,246,0.25)] transition-all duration-300">
-              <span>Start tracking &rarr;</span>
-            </Link>
+      {/* ── FEATURES ── */}
+      <section className="relative z-10 border-y border-white/[0.04] bg-black/20 px-4 py-24 sm:px-8 sm:py-32">
+        <div className="mx-auto max-w-6xl">
+          <Reveal>
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-fuchsia-400">Everything inside</p>
+            <h2 className="mt-3 text-3xl font-black uppercase leading-[0.9] tracking-tight sm:text-6xl">Built to handle<br />chaos.</h2>
+          </Reveal>
+
+          <div className="mt-16 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {features.map((f, i) => (
+              <Reveal key={f.title} delay={i * 50}>
+                <div className={`group h-full cursor-default rounded-2xl border bg-white/[0.015] p-5 transition-all duration-300 hover:-translate-y-1.5 hover:bg-white/[0.04] ${
+                  f.accent === "cyan" ? "border-cyan-400/[0.08] hover:border-cyan-400/25 hover:shadow-[0_0_30px_rgba(34,211,238,0.05)]" :
+                  f.accent === "fuchsia" ? "border-fuchsia-400/[0.08] hover:border-fuchsia-400/25 hover:shadow-[0_0_30px_rgba(217,70,239,0.05)]" :
+                  "border-amber-400/[0.08] hover:border-amber-400/25 hover:shadow-[0_0_30px_rgba(251,191,36,0.05)]"
+                }`}>
+                  <p className={`text-[9px] font-black uppercase tracking-[0.35em] ${
+                    f.accent === "cyan" ? "text-cyan-400" : f.accent === "fuchsia" ? "text-fuchsia-400" : "text-amber-400"
+                  }`}>{f.tag}</p>
+                  <h3 className="mt-3 text-sm font-black uppercase leading-snug tracking-tight">{f.title}</h3>
+                  <p className="mt-2 text-xs font-medium leading-relaxed text-zinc-500">{f.body}</p>
+                </div>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
+
+      {/* ── BATTLES ── */}
+      <section className="relative z-10 px-4 py-24 sm:px-8 sm:py-32">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid items-center gap-16 lg:grid-cols-2">
+            <Reveal>
+              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-fuchsia-400">New feature</p>
+              <h2 className="mt-3 text-3xl font-black uppercase leading-[0.9] tracking-tight sm:text-6xl">Spiral<br />Battles.</h2>
+              <p className="mt-6 text-base font-medium leading-relaxed text-zinc-400">Challenge someone to chase the same goal. Both of you log weekly effort. One shot per week. Real-time leaderboard. Six months. One winner.</p>
+              <div className="mt-8 space-y-3">
+                {["Invite anyone with their user ID.", "One log per week — no gaming the system.", "Watch the gap open in real time."].map((item) => (
+                  <div key={item} className="flex items-center gap-3 text-sm font-semibold text-zinc-300">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 text-[9px] text-fuchsia-300">✓</span>
+                    {item}
+                  </div>
+                ))}
+              </div>
+              <Link href="/signup" className="mt-8 inline-flex rounded-2xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 px-7 py-3.5 text-sm font-black uppercase text-[#03020a] shadow-[0_0_30px_rgba(217,70,239,0.2)] transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_50px_rgba(217,70,239,0.3)]">
+                Start a Battle →
+              </Link>
+            </Reveal>
+
+            <Reveal delay={150}>
+              {/* Animated battle card */}
+              <div className="rounded-3xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8">
+                <div className="flex items-center justify-between">
+                  <p className="text-[9px] font-mono font-bold uppercase tracking-[0.3em] text-fuchsia-300">Live battle</p>
+                  <span className="flex items-center gap-1.5 rounded-full border border-fuchsia-400/20 bg-fuchsia-400/10 px-2 py-1 text-[8px] font-black uppercase tracking-wider text-fuchsia-300">
+                    <span className="h-1 w-1 animate-pulse rounded-full bg-fuchsia-400" />
+                    Week 6 of 26
+                  </span>
+                </div>
+                <h3 className="mt-4 text-lg font-black uppercase">Write a novel openly</h3>
+                <div className="mt-5 grid grid-cols-2 gap-3">
+                  <div className="rounded-2xl border border-cyan-300/20 bg-cyan-300/[0.05] p-5">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-cyan-300">You</p>
+                    <p className="mt-2 text-5xl font-black tabular-nums">47</p>
+                    <p className="mt-1 text-[10px] text-zinc-500">effort pts</p>
+                  </div>
+                  <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500">Opponent</p>
+                    <p className="mt-2 text-5xl font-black tabular-nums text-zinc-400">39</p>
+                    <p className="mt-1 text-[10px] text-zinc-600">effort pts</p>
+                  </div>
+                </div>
+                <div className="mt-5">
+                  <div className="mb-2 flex justify-between text-[9px] font-mono font-bold uppercase tracking-wider text-zinc-600">
+                    <span>You're ahead by 8 pts</span>
+                    <span>Week 6 / 26</span>
+                  </div>
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/[0.04]">
+                    <div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-fuchsia-400" style={{ width: "55%", transition: "width 1.5s ease" }} />
+                  </div>
+                </div>
+                <p className="mt-4 text-[10px] font-semibold text-zinc-600 italic">"Rewrote the ending before school. Chapter 24 finally exists."</p>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ── PROOF ── */}
+      <section className="relative z-10 border-y border-white/[0.04] bg-black/20 px-4 py-24 sm:px-8 sm:py-32">
+        <div className="mx-auto max-w-6xl">
+          <Reveal>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-fuchsia-400">Real logs</p>
+                <h2 className="mt-3 text-3xl font-black uppercase leading-[0.9] tracking-tight sm:text-6xl">Proof beats<br />vibes.</h2>
+              </div>
+              <Link href="/spirals" className="w-fit rounded-xl border border-white/10 px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 transition-all hover:border-cyan-300/40 hover:text-cyan-100">
+                See the public wall →
+              </Link>
+            </div>
+          </Reveal>
+
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {proofCards.map((item, i) => (
+              <Reveal key={item.goal} delay={i * 80}>
+                <div className="group h-full rounded-3xl border border-white/[0.05] bg-white/[0.02] p-5 transition-all duration-300 hover:-translate-y-2 hover:border-fuchsia-400/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
+                  <div className="mb-4 flex items-start justify-between gap-2">
+                    <p className="text-[9px] font-mono font-bold uppercase tracking-wider text-cyan-400">{item.week}</p>
+                    <span className="text-xl font-black text-white">{item.effort}<span className="text-sm text-zinc-600">/10</span></span>
+                  </div>
+                  <p className="text-sm font-black uppercase leading-tight tracking-tight">{item.goal}</p>
+                  <p className="mt-3 text-xs font-medium italic leading-relaxed text-zinc-500">&ldquo;{item.line}&rdquo;</p>
+                  {/* Effort bar */}
+                  <div className="mt-5 h-1 w-full overflow-hidden rounded-full bg-white/[0.04]">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-fuchsia-400 transition-all duration-700 group-hover:opacity-100"
+                      style={{ width: `${item.effort * 10}%`, opacity: 0.5 }}
+                    />
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA ── */}
+      <section className="relative z-10 overflow-hidden px-4 py-32 sm:px-8">
+        {/* Big glowing orb behind CTA */}
+        <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-cyan-600/10 to-fuchsia-600/10 blur-[100px]" />
+        <Reveal>
+          <div className="relative mx-auto max-w-3xl text-center">
+            <p className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600">You already know the goal</p>
+            <h2 className="mt-4 text-4xl font-black uppercase leading-[0.88] tracking-tight sm:text-7xl">
+              Ready to track
+              <br />
+              <span className="bg-gradient-to-r from-cyan-400 via-blue-300 to-fuchsia-400 bg-clip-text text-transparent">
+                the mess?
+              </span>
+            </h2>
+            <p className="mx-auto mt-7 max-w-lg text-base font-medium text-zinc-500">
+              Free. No streaks. No guilt. Just you, your goal, and six months of honest evidence.
+            </p>
+            <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+              <Link
+                href="/signup"
+                className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-10 py-4 text-sm font-black uppercase tracking-wide text-white shadow-[0_0_60px_rgba(34,211,238,0.2)] transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_80px_rgba(34,211,238,0.35)]"
+              >
+                <span className="relative z-10">Start tracking →</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              </Link>
+              <Link href="/spirals" className="rounded-2xl border border-white/10 px-10 py-4 text-sm font-black uppercase tracking-wide text-zinc-400 transition-all hover:border-white/20 hover:text-white">
+                See public spirals
+              </Link>
+            </div>
+          </div>
+        </Reveal>
+      </section>
+
     </main>
   );
 }
