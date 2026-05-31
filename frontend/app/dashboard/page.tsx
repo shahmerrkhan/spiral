@@ -1051,16 +1051,6 @@ const TOUR_STEPS = [
         title: "Log a Week",
         description: "Write what happened. Rate your effort. Get a response that isn't motivational nonsense. That's the spiral.",
     },
-    {
-        selector: "[data-tour='replay']",
-        title: "Replay Your Story",
-        description: "Watch your entire spiral play back week by week. See the pattern. See the proof.",
-    },
-    {
-        selector: "[data-tour='battles']",
-        title: "Spiral Battles",
-        description: "Challenge someone to chase the same goal. Both of you log weekly effort. One person wins. Find it in the nav.",
-    },
 ];
 
 function findTourTarget(step: TourStep): HTMLElement | null {
